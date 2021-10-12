@@ -6,25 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-/**
-int addPoints{
-
-}
-
-int subtrackPoints{
-
-}
-
-void seeQuote{
-
-}
-**/
-
 int main(){
 
 printf("ADMIN\n");
 printf("Introduce la frase\n");
 
+//CREAMOS NUESTRO REFRAN
 char quote[250];
 fgets(quote, sizeof(quote), stdin);
 printf("FRASE: ");
@@ -39,6 +26,7 @@ for(int j=0; j<lenght; j++){
     mask[j]=0;
 }
 
+//ENCRIPTAMOS NUESTRO REFRAN
 for(int i = 0; (i<lenght-1); i++){
     
     if(quote[i] == ' '){
@@ -55,9 +43,9 @@ int pointsB=0;
 printf("Buenas jugadores nombre1, nombre2\n");
 
 int changeplayer = 0;
-bool isComplete = false; //HACER FUNCION QUE VEA SI ESTA COMPLETO
+int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
 
-    while(isComplete == false){
+    while(isComplete == 0){
         while(changeplayer==0){
 
             printf("La frase es: \n");
@@ -84,33 +72,53 @@ bool isComplete = false; //HACER FUNCION QUE VEA SI ESTA COMPLETO
             scanf("%s\n", mode);
             fgets(letter, sizeof(letter), stdin);
 
+            //COMPROBACIÓN PARA QUE SE JUEGUE EN MAYÚSCULAS
             if(letter[0]>90){
                 letter[0] = letter[0] - 32;
                 printf("Has elegido la letra: %c\n", *letter);
             }
 
+            //COMPROBAMOS SI EL USUARIO JUEGA CON VOCAL O CONSONANTE
             int vocalcheck = strcmp(vocal, mode);
             int consonantecheck = strcmp(consonante, mode);
             
-
+            //EL JUGADOR UNO HA SELECCIONADO VOCAL
             if(vocalcheck == 0){
                 printf("Has elegido vocal\n");
                 
-                if(pointsB<15){
+                //EL JUGADOR UNO NO TIENE PUNTOS PARA COMPRAR VOCAL CAMBIAMOS LA LETRA POR UNA CARACTER QUE NO PUEDA ESTAR EN EL PANEL
+                if(pointsA<15){
                     printf("No tienes saldo para una vocal\n");
-                    letter[0] = 0;
+                    letter[0] = 42;
                 }
 
+                //EL JUGADOR UNO HA ACERTADO LA VOCAL
                 changeplayer = 1;
                 int counter=0;
+                //PARA QUE PUEDA SEGUIR JUGANDO TRAS NO PODER COMPRAR VOCAL
+                if(letter[0] == 42){
+                    changeplayer = 0;
+                }
 
-                //MARCAMOS LA LETRA QUE HEMOS ACERTADO
                 for(int k=0; k < lenght; ++k) {
                     if (quote[k] == letter[0]) {
                     mask[k] = 1;
                     quote_[k] = quote[k];
                     counter++;
                     changeplayer=0;
+
+                    for(int i = 0; i< lenght; i++){
+                            if(mask[i] == 0){
+                                isComplete = 0; 
+                            }
+                        }
+
+                        printf("Quieres salir ADMIN?\n");
+                        int saliradmin;
+                        scanf("%d", &saliradmin);
+                        if(saliradmin == 1){
+                            isComplete = 1;
+                        }
                     }
 
                 }
@@ -129,14 +137,31 @@ bool isComplete = false; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                     quote_[k] = quote[k];
                     counter++;
                     changeplayer=0;
+                    pointsA = pointsA + 25;
+
+                    for(int i = 0; i< lenght; i++){
+                            if(mask[i] == 0){
+                                isComplete = 0; 
+                            }
+                        }
+                        //FUNCION DE SALIDA PARA BETATESTERS 
+                        printf("Quieres salir ADMIN?\n");
+                        int saliradmin;
+                        scanf("%d", &saliradmin);
+                        if(saliradmin == 1){
+                            isComplete = 1;
+                        }
                     }
                 }
+
+                //VER LA PALABRA
+                printf("\n\n\n");
                 printf("Habia %i %s\n", counter, letter);
                 printf("%s\n\n\n", quote_);
             }
         }
 
-        while(changeplayer==0){
+        while(changeplayer==1){
 
             printf("La frase es: \n");
 
@@ -189,6 +214,20 @@ bool isComplete = false; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                     quote_[k] = quote[k];
                     counter++;
                     changeplayer=0;
+
+                    for(int i = 0; i< lenght; i++){
+                            if(mask[i] == 0){
+                                isComplete = 0; 
+                            }
+                        }
+
+                        printf("Quieres salir ADMIN?\n");
+                        int saliradmin;
+                        scanf("%d", &saliradmin);
+                        if(saliradmin == 1){
+                            isComplete = 1;
+                        }
+
                     }
 
                 }
@@ -203,16 +242,45 @@ bool isComplete = false; //HACER FUNCION QUE VEA SI ESTA COMPLETO
 
                 for(int k=0; k < lenght; ++k) {
                     if (quote[k] == letter[0]) {
-                    mask[k] = 1;
-                    quote_[k] = quote[k];
-                    counter++;
-                    changeplayer=0;
+                        mask[k] = 1;
+                        quote_[k] = quote[k];
+                        counter++;
+                        changeplayer=0;
+                        pointsB = pointsB + 25;
+
+                        for(int i = 0; i< lenght; i++){
+                            if(mask[i] == 0){
+                                isComplete = 0; 
+                            }
+                        }
+
+                        printf("Quieres salir ADMIN?\n");
+                        int saliradmin;
+                        scanf("%d", &saliradmin);
+                        if(saliradmin == 1){
+                            isComplete = 1;
+                        }
+    
                     }
-                }
+
+                    }
                 printf("Habia %i %s\n", counter, letter);
                 printf("%s\n\n\n", quote_);
+                }
+                
             }
         }
-    
+        
+        isComplete = 1;
+
+        
+
+    if(changeplayer == 0){
+        printf("Ha ganado jugador1!!!\n");
     }
+
+    if(changeplayer == 1){
+        printf("Ha ganado jugador2 !!!\n");
+    }
+
 }
