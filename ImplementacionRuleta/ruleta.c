@@ -46,6 +46,11 @@ int changeplayer = 0;
 int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
 
     while(isComplete == 0){
+
+        /**
+         * Juega el Jugador1
+         * */
+
         while(changeplayer==0){
 
             printf("La frase es: \n");
@@ -87,7 +92,7 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                 printf("Has elegido vocal\n");
                 
                 //EL JUGADOR UNO NO TIENE PUNTOS PARA COMPRAR VOCAL CAMBIAMOS LA LETRA POR UNA CARACTER QUE NO PUEDA ESTAR EN EL PANEL
-                if(pointsA<15){
+                if(pointsA<50){
                     printf("No tienes saldo para una vocal\n");
                     letter[0] = 42;
                 }
@@ -100,30 +105,31 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                     changeplayer = 0;
                 }
 
+                pointsA = pointsA - 50;
+
                 for(int k=0; k < lenght; ++k) {
                     if (quote[k] == letter[0]) {
                     mask[k] = 1;
                     quote_[k] = quote[k];
                     counter++;
-                    changeplayer=0;
-
+                    changeplayer=2;
+                    
                     for(int i = 0; i< lenght; i++){
                             if(mask[i] == 0){
-                                isComplete = 0; 
+                                printf("%i", mask[i]);
+                                isComplete = 0;
+                                changeplayer=0;
                             }
                         }
 
-                        printf("Quieres salir ADMIN?\n");
-                        int saliradmin;
-                        scanf("%d", &saliradmin);
-                        if(saliradmin == 1){
-                            isComplete = 1;
-                        }
                     }
 
                 }
                 printf("Habia %i %s\n", counter, letter);
-                printf("%s\n\n\n", quote_);
+                for(int k= 0; k<lenght-1; k++){
+                    printf("%c",quote_[k]);
+                }
+                printf("\n\n");
             }
 
             if(consonantecheck == 0){
@@ -136,30 +142,33 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                     mask[k] = 1;
                     quote_[k] = quote[k];
                     counter++;
-                    changeplayer=0;
-                    pointsA = pointsA + 25;
+                    changeplayer=2;
+                    pointsA = pointsA + 50;
 
                     for(int i = 0; i< lenght; i++){
                             if(mask[i] == 0){
-                                isComplete = 0; 
+                                printf("%i\n", mask[i]);
+                                isComplete = 0;
+                                changeplayer = 0;
                             }
                         }
-                        //FUNCION DE SALIDA PARA BETATESTERS 
-                        printf("Quieres salir ADMIN?\n");
-                        int saliradmin;
-                        scanf("%d", &saliradmin);
-                        if(saliradmin == 1){
-                            isComplete = 1;
-                        }
+ 
                     }
                 }
 
                 //VER LA PALABRA
-                printf("\n\n\n");
-                printf("Habia %i %s\n", counter, letter);
-                printf("%s\n\n\n", quote_);
+                
+                printf("Habia %i\n", counter, letter);
+                for(int k= 0; k<lenght-1; k++){
+                    printf("%c",quote_[k]);
+                }
+                printf("\n\n");
             }
         }
+
+         /**
+         * Juega el Jugador2
+         * */
 
         while(changeplayer==1){
 
@@ -199,12 +208,18 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
             if(vocalcheck == 0){
                 printf("Has elegido vocal\n");
                 
-                if(pointsB<15){
+                if(pointsB<50){
                     printf("No tienes saldo para una vocal\n");
-                    letter[0] = 0;
+                    letter[0] = 42;
+                }
+
+                pointsB = pointsB - 50;
+
+                if(letter[0] == 42){
+                    changeplayer = 0;
                 }
                 
-                changeplayer = 1;
+                changeplayer = 0;
                 int counter=0;
 
                 //MARCAMOS LA LETRA QUE HEMOS ACERTADO
@@ -213,31 +228,28 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                     mask[k] = 1;
                     quote_[k] = quote[k];
                     counter++;
-                    changeplayer=0;
+                    changeplayer=2;
 
                     for(int i = 0; i< lenght; i++){
                             if(mask[i] == 0){
-                                isComplete = 0; 
+                                isComplete = 0;
+                                changeplayer=1;
                             }
-                        }
-
-                        printf("Quieres salir ADMIN?\n");
-                        int saliradmin;
-                        scanf("%d", &saliradmin);
-                        if(saliradmin == 1){
-                            isComplete = 1;
                         }
 
                     }
 
                 }
                 printf("Habia %i %s\n", counter, letter);
-                printf("%s\n\n\n", quote_);
+                for(int k= 0; k<lenght-1; k++){
+                    printf("%c",quote_[k]);
+                }
+                printf("\n\n");
             }
 
             if(consonantecheck == 0){
                 printf("Has elegido consonante\n");
-                changeplayer=1;
+                changeplayer=2;
                 int counter=0;
 
                 for(int k=0; k < lenght; ++k) {
@@ -245,35 +257,25 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                         mask[k] = 1;
                         quote_[k] = quote[k];
                         counter++;
-                        changeplayer=0;
-                        pointsB = pointsB + 25;
+                        changeplayer=1;
+                        pointsB = pointsB + 50;
 
                         for(int i = 0; i< lenght; i++){
                             if(mask[i] == 0){
                                 isComplete = 0; 
                             }
                         }
-
-                        printf("Quieres salir ADMIN?\n");
-                        int saliradmin;
-                        scanf("%d", &saliradmin);
-                        if(saliradmin == 1){
-                            isComplete = 1;
                         }
-    
                     }
-
+                    printf("Habia %i %s\n", counter, letter);
+                    for(int k= 0; k<lenght-1; k++){
+                        printf("%c",quote_[k]);
                     }
-                printf("Habia %i %s\n", counter, letter);
-                printf("%s\n\n\n", quote_);
+                    printf("\n\n");
+                    }
                 }
-                
-            }
-        }
-        
-        isComplete = 1;
 
-        
+        }
 
     if(changeplayer == 0){
         printf("Ha ganado jugador1!!!\n");
