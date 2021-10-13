@@ -112,16 +112,15 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                     mask[k] = 1;
                     quote_[k] = quote[k];
                     counter++;
-                    changeplayer=2;
-                    
-                    for(int i = 0; i< lenght; i++){
-                            if(mask[i] == 0){
-                                printf("%i", mask[i]);
-                                isComplete = 0;
-                                changeplayer=0;
-                            }
-                        }
+                    changeplayer=0;
 
+
+                    int winPlayer1Vocal= strcmp(quote_, quote);
+
+                    if(winPlayer1Vocal == 0){
+                        changeplayer = 10;
+                        isComplete = 1;
+                    }
                     }
 
                 }
@@ -142,29 +141,25 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                     mask[k] = 1;
                     quote_[k] = quote[k];
                     counter++;
-                    changeplayer=2;
+                    changeplayer=0;
                     pointsA = pointsA + 50;
 
-                    for(int i = 0; i< lenght; i++){
-                            if(mask[i] == 0){
-                                printf("%i\n", mask[i]);
-                                isComplete = 0;
-                                changeplayer = 0;
-                            }
+                    int winPlayer1Consonante = strcmp(quote_, quote);
+
+                    if(winPlayer1Consonante == 0){
+                        changeplayer = 10;
+                        isComplete = 1;
+                    }
                         }
  
                     }
-                }
-
-                //VER LA PALABRA
-                
-                printf("Habia %i\n", counter, letter);
-                for(int k= 0; k<lenght-1; k++){
+                    printf("Habia %i\n", counter, letter);
+                    for(int k= 0; k<lenght-1; k++){
                     printf("%c",quote_[k]);
+                    }
+                    printf("\n\n");
                 }
-                printf("\n\n");
             }
-        }
 
          /**
          * Juega el Jugador2
@@ -216,7 +211,7 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                 pointsB = pointsB - 50;
 
                 if(letter[0] == 42){
-                    changeplayer = 0;
+                    changeplayer = 1;
                 }
                 
                 changeplayer = 0;
@@ -228,14 +223,13 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                     mask[k] = 1;
                     quote_[k] = quote[k];
                     counter++;
-                    changeplayer=2;
+                    changeplayer=1;
 
-                    for(int i = 0; i< lenght; i++){
-                            if(mask[i] == 0){
-                                isComplete = 0;
-                                changeplayer=1;
-                            }
-                        }
+                    int winPlayer2Vocal = strcmp(quote,quote_);
+                    if(winPlayer2Vocal == 0){
+                        changeplayer = 20;
+                        isComplete = 1;
+                    }
 
                     }
 
@@ -260,10 +254,10 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                         changeplayer=1;
                         pointsB = pointsB + 50;
 
-                        for(int i = 0; i< lenght; i++){
-                            if(mask[i] == 0){
-                                isComplete = 0; 
-                            }
+                        int winPlayer2Consonante = strcmp(quote, quote_);
+                        if(winPlayer2Consonante == 0){
+                            changeplayer=20;
+                            isComplete = 1;
                         }
                         }
                     }
@@ -276,13 +270,12 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                 }
 
         }
+if(changeplayer == 10){
+    printf("Ha ganado el jugador 1!!!");
+}
 
-    if(changeplayer == 0){
-        printf("Ha ganado jugador1!!!\n");
-    }
-
-    if(changeplayer == 1){
-        printf("Ha ganado jugador2 !!!\n");
-    }
+if(changeplayer == 20){
+    printf("Ha ganado el jugador 2!!!");
+}
 
 }
