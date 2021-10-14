@@ -20,7 +20,7 @@ printf("Size of quote: %zu \n",strlen(quote));
 
 size_t lenght = strlen(quote);
 
-char quote_[250];
+char quote_[lenght - 1];
 int mask[lenght];
 for(int j=0; j<lenght; j++){
     mask[j]=0;
@@ -103,6 +103,7 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                 //PARA QUE PUEDA SEGUIR JUGANDO TRAS NO PODER COMPRAR VOCAL
                 if(letter[0] == 42){
                     changeplayer = 0;
+                    pointsA = pointsA + 50;
                 }
 
                 pointsA = pointsA - 50;
@@ -116,7 +117,8 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
 
 
                     int winPlayer1Vocal= strcmp(quote_, quote);
-
+                    printf("Ha ganado 1 ? %i\n", winPlayer1Vocal);
+                    printf("%s es igual a %s\n", quote_, quote);
                     if(winPlayer1Vocal == 0){
                         changeplayer = 10;
                         isComplete = 1;
@@ -145,7 +147,8 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                     pointsA = pointsA + 50;
 
                     int winPlayer1Consonante = strcmp(quote_, quote);
-
+                    printf("Ha ganado 1 ? %i\n", winPlayer1Consonante);
+                    printf("%s es igual a %s\n", quote_, quote);
                     if(winPlayer1Consonante == 0){
                         changeplayer = 10;
                         isComplete = 1;
@@ -206,6 +209,7 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                 if(pointsB<50){
                     printf("No tienes saldo para una vocal\n");
                     letter[0] = 42;
+                    pointsB = pointsB + 50;
                 }
 
                 pointsB = pointsB - 50;
@@ -226,6 +230,8 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                     changeplayer=1;
 
                     int winPlayer2Vocal = strcmp(quote,quote_);
+                    printf("Ha ganado 2 ? %i\n", winPlayer2Vocal);
+                    printf("%s es igual a %s\n", quote_, quote);
                     if(winPlayer2Vocal == 0){
                         changeplayer = 20;
                         isComplete = 1;
@@ -243,7 +249,7 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
 
             if(consonantecheck == 0){
                 printf("Has elegido consonante\n");
-                changeplayer=2;
+                changeplayer=0;
                 int counter=0;
 
                 for(int k=0; k < lenght; ++k) {
@@ -255,6 +261,8 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
                         pointsB = pointsB + 50;
 
                         int winPlayer2Consonante = strcmp(quote, quote_);
+                        printf("Ha ganado 2 ? %i\n", winPlayer2Consonante);
+                        printf("%s es igual a %s\n", quote_, quote);
                         if(winPlayer2Consonante == 0){
                             changeplayer=20;
                             isComplete = 1;
