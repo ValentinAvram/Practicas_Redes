@@ -42,7 +42,7 @@ int main ( )
 		servidor y el puerto del servicio que solicitamos
 	-------------------------------------------------------------------*/
 	sockname.sin_family = AF_INET;
-	sockname.sin_port = htons(2000);
+	sockname.sin_port = htons(2050);
 	sockname.sin_addr.s_addr =  inet_addr("127.0.0.1"); //TODO: AÑADIR LA IP POR PANTALLA
 
 	/* ------------------------------------------------------------------
