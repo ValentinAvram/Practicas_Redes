@@ -11,9 +11,18 @@
 
 using namespace std;
 
-int main ( )
+int main (int argc, char const * argv)
 {
   
+	if(argc != 2)
+	{
+		printf("Error en el numero de argumentos\n");
+		printf("Por favor, introduzca la IP del servidor como argumento");
+
+		exit(-1);
+	}
+
+
 	/*---------------------------------------------------- 
 		Descriptor del socket y buffer de datos                
 	-----------------------------------------------------*/
@@ -44,7 +53,7 @@ int main ( )
 	-------------------------------------------------------------------*/
 	sockname.sin_family = AF_INET;
 	sockname.sin_port = htons(2050);
-	sockname.sin_addr.s_addr =  inet_addr("127.0.0.1"); //TODO: AÑADIR LA IP POR PANTALLA
+	sockname.sin_addr.s_addr =  inet_addr(argv[1]); //TODO: AÑADIR LA IP POR PANTALLA
 
 	/* ------------------------------------------------------------------
 		Se solicita la conexión con el servidor

@@ -28,6 +28,8 @@ class player{
 	char name[MSG_SIZE];
     char password[MSG_SIZE];
     int points;
+
+    //TODO: Añadir Getters y Setters
 };
 
 class game{ // TODO: class game:player() ??
@@ -35,6 +37,7 @@ class game{ // TODO: class game:player() ??
     public:
     int descriptor1, descriptor2;
     //TODO: Metodo publico que sea el juego entero?
+    //TODO: Añadir Getters y Setters
 };
 
 // TODO: Funciones de registro, una para user, otra para pass
@@ -113,7 +116,7 @@ int main ( )
     
    	
     	//Capturamos la señal SIGINT (Ctrl+c)
-    	//signal(SIGINT,manejador);
+    	signal(SIGINT,manejador);
     
 	
 		// El servidor acepta una petición
@@ -181,7 +184,7 @@ int main ( )
                         }
                         else if (i == 0)
                         {
-                            //Se ha introducido información de teclado // Que es esto?
+                            //Se ha introducido información de teclado del servidor
                             bzero(buffer, sizeof(buffer));
                             fgets(buffer, sizeof(buffer),stdin);
                             
@@ -215,10 +218,12 @@ int main ( )
                                 // TODO: Usar strtok
                                 if(strcmp(buffer,"SALIR\n") == 0)
                                 {
+                                    printf("+Ok. Desconexion procesada");
                                     salirCliente(i,&readfds,&numClientes,arrayClientes); 
                                 }
                                 else
-                                {   
+                                {   // TODO: Aqui llamar a la funcion del juego
+
                                     sprintf(identificador,"<%d>: %s",i,buffer);
                                     bzero(buffer,sizeof(buffer));
 
@@ -236,6 +241,7 @@ int main ( )
                             {
                                 printf("El socket %d, ha introducido ctrl+c\n", i);
                                 //Eliminar ese socket
+                                printf("+Ok. Desconexion procesada");
                                 salirCliente(i,&readfds,&numClientes,arrayClientes);
                             }
                         }
@@ -299,9 +305,9 @@ void FichRead()
 }
 
 
-/*void manejador (int signum){
+void manejador (int signum){
     printf("\nSe ha recibido la señal sigint\n");
     signal(SIGINT,manejador);
     
     //Implementar lo que se desee realizar cuando ocurra la excepción de ctrl+c en el servidor
-}*/
+}
