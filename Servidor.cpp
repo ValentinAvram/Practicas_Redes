@@ -16,8 +16,8 @@
 #define MAX_CLIENTS 30
 #define PORT 2050
 
+using namespace std;
 //TODO: Hacer funciones de "Existe X letra"
-//TODO: Crear clase de PLAYER, GAME
 //TODO: Unico recieve
 //TODO: Crear archivo .txt de refranes, que escoja automaticamente refranes
 
@@ -30,30 +30,22 @@ class player{
     int points;
 };
 
-class game{
+class game{ // TODO: class game:player() ??
 
     public:
     int descriptor1, descriptor2;
+    //TODO: Metodo publico que sea el juego entero?
 };
 
+// TODO: Funciones de registro, una para user, otra para pass
+// TODO: Funciones de inicio de sesión
+// TODO: Funciones que comprueben si un user esta registrado o no
 
-/*
- * El servidor ofrece el servicio de un chat
- */
+//TODO : usar strtok
 
 void manejador(int signum);
 void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClientes[]);
-string FichRead();
-/*
-struct acc_player
-{
-    int descriptor;
-    char username[MSG_SIZE];
-    char password[MSG_SIZE];
-    char channel[MSG_SIZE];
-};
-*/
-
+void FichRead();
 
 int main ( )
 {
@@ -151,6 +143,11 @@ int main ( )
                             }
                             else
                             {
+                                // TODO: Crear nueva instancia PLAYER, descriptor.playerN = new_sd
+                                // Funcion de registro que nos devuelva username y pass
+                                // Asignar username y pass a nueva instancia.
+                                // Agrupar instancias de dos en dos, en clase game
+
                                 if(numClientes < MAX_CLIENTS)
                                 {
                                     arrayClientes[numClientes] = new_sd;
@@ -158,7 +155,8 @@ int main ( )
                                     FD_SET(new_sd,&readfds);
                                 
                                     strcpy(buffer, "AQUI EMPEZARÍA EL GAME\n"); //TODO:
-
+                                    // TODO: Funcion de la clase "game" que sea el propio game??
+                                 
                                     // Enviar mensaje al nuevo cliente
                                     send(new_sd,buffer,sizeof(buffer),0); //No se muy bien como va lo de las flags , "0".
                                 
@@ -211,7 +209,10 @@ int main ( )
                             recibidos = recv(i,buffer,sizeof(buffer),0);
                             if(recibidos > 0)
                             {
-                                
+                                // TODO: FUNCIONES DE REGISTRO, una para user, otra para pass???
+                                // TODO: FUNCIONES DE LOGIN,
+                                // TODO: Diferenciar usuario registrado de no registrado
+                                // TODO: Usar strtok
                                 if(strcmp(buffer,"SALIR\n") == 0)
                                 {
                                     salirCliente(i,&readfds,&numClientes,arrayClientes); 
@@ -274,7 +275,7 @@ void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClie
 
 
 }
-string FichRead()
+void FichRead()
 {
     string nombre = "refranes.txt"
     string quote;    
@@ -296,6 +297,7 @@ string FichRead()
  
     ifstream fichero(nombre.c_str());
 }
+
 
 /*void manejador (int signum){
     printf("\nSe ha recibido la señal sigint\n");
