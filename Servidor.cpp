@@ -22,22 +22,100 @@ using namespace std;
 //TODO: Crear archivo .txt de refranes, que escoja automaticamente refranes
 
 class player{
-	public:
+
+	private:
 	int descriptor;
     int status; // 0 en cola, 1 en espera a game, 2 en game
 	char name[MSG_SIZE];
     char password[MSG_SIZE];
     int points;
 
+    public:
+
+    //Setters
+    void setDescriptor(int desc)
+    {
+        descriptor = desc;
+    }
+
+    void setStatus(int status)
+    {
+        status=status;
+    }
+
+    void setName(char nombre[MSG_SIZE])
+    {
+        name = nombre;
+    }
+
+    void setPassword(char contra[MSG_SIZE])
+    {
+        password = contra;
+    }
+
+    void setPoints(int puntos)
+    {
+        points = puntos;
+    }
+    
+    //Getters
+    int getDescriptor()
+    {
+        return descriptor;
+    }
+
+    int getStatus()
+    {
+        return status;
+    }
+
+    char getName()
+    {
+        return name;
+    }
+
+    char getPass()
+    {
+        return password;
+    } 
+
+    int getPoints()
+    {
+        return points;
+    }
     //TODO: Añadir Getters y Setters
 };
 
 class game{ // TODO: class game:player() ??
 
-    public:
+    private:
     int descriptor1, descriptor2;
     //TODO: Metodo publico que sea el juego entero?
     //TODO: Añadir Getters y Setters
+
+    public:
+
+    //Setters
+    void setDescriptor1(int sd1)
+    {
+        descriptor1 = sd1;
+    }
+    
+    void setDescriptor2(int sd2)
+    {
+        descriptor2 = sd2;
+    }
+
+    //Getters
+    int getDescriptor1()
+    {
+        return Descriptor1;
+    }
+    
+    int getDescriptor2()
+    {
+        return Descriptor2;
+    }
 };
 
 // TODO: Funciones de registro, una para user, otra para pass
