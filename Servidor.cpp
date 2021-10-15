@@ -24,7 +24,7 @@ using namespace std;
 class player{
 	public:
 	int descriptor;
-    int status; // 0 en cola, 1 conectado, 2 en espera a game, 3 en game
+    int status; // 0 en cola, 1 en espera a game, 2 en game
 	char name[MSG_SIZE];
     char password[MSG_SIZE];
     int points;

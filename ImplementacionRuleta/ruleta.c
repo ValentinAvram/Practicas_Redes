@@ -65,9 +65,12 @@ int isComplete = 0; //HACER FUNCION QUE VEA SI ESTA COMPLETO
 
             printf("Que desea jugar?\n");
 
-            printf("Introduzca ~VOCAL (intro) vocal~ para revelar una vocal\n");
+            printf("Introduzca ~VOCAL (intro) vocal~ para revelar una vocal\n"); 
+            //TODO: Por que VOCAL + intro + vocal ?? DEBE IR TODO EN LA MISMA LINEA, sin intros
 
             printf("Introduzca ~CONSONANTE (intro) consonante~ para revelar una consonante\n");
+            //TODO: Por que CONSONANTE + intro + consonante ?? DEBE IR TODO EN LA MISMA LINEA, sin intros
+
 
             printf("Ejemplo: \nCONSONANTE\nL\n");
 
