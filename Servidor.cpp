@@ -5,15 +5,37 @@
 #include <netdb.h>
 #include <stdlib.h>
 #include <string.h>
-#include<signal.h>
+#include <signal.h>
 #include <unistd.h>
 #include <time.h>
 #include <arpa/inet.h>
+#include <ifstream.h>
 
 
 #define MSG_SIZE 350
 #define MAX_CLIENTS 30
 #define PORT 2050
+
+//TODO: Hacer funciones de "Existe X letra"
+//TODO: Crear clase de PLAYER, GAME
+//TODO: Unico recieve
+//TODO: Crear archivo .txt de refranes, que escoja automaticamente refranes
+
+class player{
+	public:
+	int descriptor;
+    int status; // 0 en cola, 1 conectado, 2 en espera a game, 3 en game
+	char name[MSG_SIZE];
+    char password[MSG_SIZE];
+    int points;
+};
+
+class game{
+
+    public:
+    int descriptor1, descriptor2;
+};
+
 
 /*
  * El servidor ofrece el servicio de un chat
@@ -21,7 +43,7 @@
 
 void manejador(int signum);
 void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClientes[]);
-
+string FichRead();
 /*
 struct acc_player
 {
@@ -252,7 +274,28 @@ void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClie
 
 
 }
-
+string FichRead()
+{
+    string nombre = "refranes.txt"
+    string quote;    
+    
+    ifstream fichero(nombre.c_str());
+    if( fichero.fail() )
+    {
+        cout << "No existe el fichero!" << endl;
+        exit(1);
+    }
+ 
+    while (! fichero.eof()) 
+    {
+        getline(fichero,quote);
+        if (! fichero.eof()) 
+            cout << quote << endl;
+    }
+    fichero.close();
+ 
+    ifstream fichero(nombre.c_str());
+}
 
 /*void manejador (int signum){
     printf("\nSe ha recibido la señal sigint\n");
