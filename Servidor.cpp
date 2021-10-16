@@ -15,11 +15,12 @@
 #define MSG_SIZE 350
 #define MAX_CLIENTS 30
 #define PORT 2050
+#define MAX_GAMES 10
+
 
 using namespace std;
 //TODO: Hacer funciones de "Existe X letra"
 //TODO: Unico recieve
-//TODO: Crear archivo .txt de refranes, que escoja automaticamente refranes
 
 class player{
 
@@ -130,7 +131,7 @@ void FichRead();
 
 int main ( )
 {
-    
+
     system("clear");
 
 	/*---------------------------------------------------- 
@@ -146,9 +147,9 @@ int main ( )
    	int arrayClientes[MAX_CLIENTS]; //Crear mas arrays por partidas
     int numClientes = 0;
     int i,j,k,recibidos,on,ret,salida;
-
     
-    //TODO: Pedir frase por pantalla, scanf
+    bool register = true;
+    bool login = true;  
 
     // Apertura del socket
   	sd = socket (AF_INET, SOCK_STREAM, 0);
@@ -235,7 +236,7 @@ int main ( )
                                     numClientes++;
                                     FD_SET(new_sd,&readfds);
                                 
-                                    strcpy(buffer, "AQUI EMPEZARÍA EL GAME\n"); //TODO:
+                                    strcpy(buffer, "+Ok. Usuario conectado\n"); //TODO:
                                     // TODO: Funcion de la clase "game" que sea el propio game??
                                  
                                     // Enviar mensaje al nuevo cliente
@@ -293,14 +294,56 @@ int main ( )
                                 // TODO: FUNCIONES DE REGISTRO, una para user, otra para pass???
                                 // TODO: FUNCIONES DE LOGIN,
                                 // TODO: Diferenciar usuario registrado de no registrado
-                                // TODO: Usar strtok
+                                // TODO: PARTIR BUFFER EN VARIABLES (strtok), cambiar buffer por las variables
+                                while(loged == false)
+                                {
+                                    if(strcmp(buffer, "USUARIO ") == 0)
+                                    {   
+                                        //TODO: Funcion comprobar que usuario existe y aux ++
+                                        //if(existe){ok}
+                                        //else{exit()}
+                                        printf("Pillar user\n");
+                                        register = false;
+                                    }
+                                    
+                                    //TODO: Si existe el usuario, comprobar que corresponder con las pass (buscar user +1 linea?)
+                                    if(strcmp(buffer, "PASSWORD") == 0)
+                                    {
+                                        //if(concuerda){ok}
+                                        //else{exit()}
+                                        printf("Pillar pass\n");
+                                        login = true;
+                                        loged = true;
+                                    }
+
+                                    if(strcmp(buffer, "REGISTRO") == 0 && register == true)
+                                    {
+                                        //TODO: Registtro, comprobar que no exista ya, etc etc etc
+                                        printf("Pillar REGISTRO\n");
+                                        loged = true;
+                                    }
+                                    else if(register == false)
+                                    {
+                                        printf("No es posible registrarse. Reinicie el cliente");
+                                    }
+                                }
+                                //TODO : TODO LO ANTERIOR DENTRO DE UN BLUCE?
+                                // TODO: Aqui todo lo del juego??
+
+                                if(strcmp(buffer,"INICAR-PARTIDA\n") == 0)
+                                {
+                                    printf("+Ok. A organizar las colas");
+                                    
+                                }
+
                                 if(strcmp(buffer,"SALIR\n") == 0)
                                 {
                                     printf("+Ok. Desconexion procesada");
                                     salirCliente(i,&readfds,&numClientes,arrayClientes); 
                                 }
+
                                 else
-                                {   // TODO: Aqui llamar a la funcion del juego
+                                {   // TODO: Aqui llamar a la funcion del juego ??
 
                                     sprintf(identificador,"<%d>: %s",i,buffer);
                                     bzero(buffer,sizeof(buffer));
@@ -315,7 +358,7 @@ int main ( )
                                 }
                             }
                             //Si el cliente introdujo ctrl+c
-                            if(recibidos== 0)
+                            if(recibidos == 0)
                             {
                                 printf("El socket %d, ha introducido ctrl+c\n", i);
                                 //Eliminar ese socket
@@ -388,4 +431,26 @@ void manejador (int signum){
     signal(SIGINT,manejador);
     
     //Implementar lo que se desee realizar cuando ocurra la excepción de ctrl+c en el servidor
+}
+
+void register(char[350] name, char[350] pass)
+{
+    FILE *fp;
+    char[] c;
+    fp = fopen("users.txt", "r+");
+        while(!feof(fp))
+        {
+          fread(&w[i],sizeof(w[i]),1,fp);
+          if(strcmp(checker,w[i].name)==0)
+            {
+            printf("\n\n\t\t\tUSERNAME ALREDY EXISTS");
+            clrscr();
+            reg();
+            }
+          else
+          {
+            strcpy(w[i].name,checker);
+            break;
+          }
+        }
 }
