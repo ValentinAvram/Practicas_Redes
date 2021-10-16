@@ -22,11 +22,23 @@ using namespace std;
 //TODO: Hacer funciones de "Existe X letra"
 //TODO: Unico recieve
 
+/* Constructor declarado en la definición de la clase como función prototipo
+Persona(const std::string& nombre,int edad, float peso, float estatura);
+// Implementación fuera de la definición de la clase
+
+Persona::Persona(const string& nombre,int edad, float peso, float estatura){
+  this -> nombre = nombre; 
+  this -> edad = edad;
+  this -> peso = peso;
+  this -> estatura = estatura;
+}
+*/
+
 class player{
 
 	private:
 	int descriptor;
-    int status; // 0 en cola, 1 en espera a game, 2 en game
+    int status; // 0 sin logear, 1 en espera a game, 2 en game
 	char name[MSG_SIZE];
     char password[MSG_SIZE];
     int points;
@@ -122,7 +134,6 @@ class game{ // TODO: class game:player() ??
 // TODO: Funciones de registro, una para user, otra para pass
 // TODO: Funciones de inicio de sesión
 // TODO: Funciones que comprueben si un user esta registrado o no
-
 //TODO : usar strtok
 
 void manejador(int signum);
@@ -134,9 +145,6 @@ int main ( )
 
     system("clear");
 
-	/*---------------------------------------------------- 
-		Descriptor del socket y buffer de datos                
-	-----------------------------------------------------*/
 	int sd, new_sd;
 	struct sockaddr_in sockname, from; // Almacen de direcciones
 	char buffer[MSG_SIZE];
@@ -191,7 +199,7 @@ int main ( )
     	FD_ZERO(&auxfds);
         // Añadir descriptores a sets
     	FD_SET(sd,&readfds);
-    	FD_SET(0,&readfds); // TODO: Cambiar 0 por el descriptor del cliente, cual sería?
+    	FD_SET(0,&readfds); // TODO: Cambiar 0 por el descriptor del cliente?? cual sería?
     
    	
     	//Capturamos la señal SIGINT (Ctrl+c)
@@ -225,7 +233,7 @@ int main ( )
                             }
                             else
                             {
-                                // TODO: Crear nueva instancia PLAYER, descriptor.playerN = new_sd
+                                // TODO: Crear nueva instancia PLAYER, playerN.descriptor = new_sd
                                 // Funcion de registro que nos devuelva username y pass
                                 // Asignar username y pass a nueva instancia.
                                 // Agrupar instancias de dos en dos, en clase game
@@ -235,17 +243,57 @@ int main ( )
                                     arrayClientes[numClientes] = new_sd;
                                     numClientes++;
                                     FD_SET(new_sd,&readfds);
-                                
-                                    strcpy(buffer, "+Ok. Usuario conectado\n"); //TODO:
-                                    // TODO: Funcion de la clase "game" que sea el propio game??
-                                 
+
+                                // TODO: Hacer funcion BufferEmpiezaPorX()
+                                // TODO: FUNCIONES DE REGISTRO, una para user, otra para pass???
+                                // TODO: FUNCIONES DE LOGIN,
+                                // TODO: Diferenciar usuario registrado de no registrado
+                                // TODO: PARTIR BUFFER EN VARIABLES (strtok()), cambiar buffer por las variables
+ 
+                                    while(loged == false)
+                                    {
+                                        if(strcmp(var1, "USUARIO ") == 0)
+                                        {   
+                                            //TODO: Funcion comprobar que usuario existe y aux ++
+                                            //if(existe){ok}
+                                            //else{exit()}
+                                            printf("Pillar user\n");
+                                            register = false;
+                                        }
+                                        
+                                        //TODO: Si existe el usuario, comprobar que corresponder con las pass (buscar user +1 linea?)
+                                        if(strcmp(buffer, "PASSWORD") == 0)
+                                        {
+                                            //if(concuerda){ok}
+                                            //else{exit()}
+                                            printf("Pillar pass\n");
+                                            login = true;
+                                            if(loged = true)
+                                            {                                            
+                                                strcpy(buffer, "Inicio de sesión correcto, bienvenido, %d\n",/*Username*/);
+                                            }
+                                        }
+
+                                        if(strcmp(buffer, "REGISTRO") == 0 && register == true)
+                                        {
+                                            //TODO: Registro, comprobar que no exista ya, etc etc etc
+                                            printf("Pillar REGISTRO\n");
+                                            strcpy(buffer, "Registro correcto, bienvenido, %d\n",/*Username*/);
+                                            loged = true;
+                                        }
+                                        else if(register == false)
+                                        {
+                                            strcpy(buffer, "No es posible registrarse. Reinicie el cliente\n");
+                                        }
+                                    }
+                                    // NombreClase nombre_objeto();
                                     // Enviar mensaje al nuevo cliente
-                                    send(new_sd,buffer,sizeof(buffer),0); //No se muy bien como va lo de las flags , "0".
-                                
+                                    send(new_sd,buffer,sizeof(buffer),0);
+                                    // TODO: Crear instancia jugador recien logeado / registrado
                                     for(j=0; j<(numClientes-1);j++)
                                     {
                                         bzero(buffer,sizeof(buffer)); // Deja buffer = "\0"
-                                        sprintf(buffer, "Nuevo Cliente conectado: %d\n",new_sd);
+                                        sprintf(buffer, "Nuevo Cliente conectado: %d\n",new_sd); // TODO: Cambiar el "new_sd" por el nick del usuario recien conectado
                                         send(arrayClientes[j],buffer,sizeof(buffer),0);
                                     }
                                 }
@@ -281,7 +329,7 @@ int main ( )
                                 close(sd);
                                 exit(-1); 
                             }
-                            //TODO: IMPLEMENTAR MENSAJES A MANDAR A LOS CLIENTES                           
+                            //TODO: IMPLEMENTAR MENSAJES A MANDAR A LOS CLIENTES. INSTRUCCIONES DE USO SI ES, otra cosa no hay                        
                         } 
                         else
                         {
@@ -291,47 +339,12 @@ int main ( )
                             recibidos = recv(i,buffer,sizeof(buffer),0);
                             if(recibidos > 0)
                             {
-                                // TODO: FUNCIONES DE REGISTRO, una para user, otra para pass???
-                                // TODO: FUNCIONES DE LOGIN,
-                                // TODO: Diferenciar usuario registrado de no registrado
-                                // TODO: PARTIR BUFFER EN VARIABLES (strtok), cambiar buffer por las variables
-                                while(loged == false)
-                                {
-                                    if(strcmp(buffer, "USUARIO ") == 0)
-                                    {   
-                                        //TODO: Funcion comprobar que usuario existe y aux ++
-                                        //if(existe){ok}
-                                        //else{exit()}
-                                        printf("Pillar user\n");
-                                        register = false;
-                                    }
-                                    
-                                    //TODO: Si existe el usuario, comprobar que corresponder con las pass (buscar user +1 linea?)
-                                    if(strcmp(buffer, "PASSWORD") == 0)
-                                    {
-                                        //if(concuerda){ok}
-                                        //else{exit()}
-                                        printf("Pillar pass\n");
-                                        login = true;
-                                        loged = true;
-                                    }
-
-                                    if(strcmp(buffer, "REGISTRO") == 0 && register == true)
-                                    {
-                                        //TODO: Registtro, comprobar que no exista ya, etc etc etc
-                                        printf("Pillar REGISTRO\n");
-                                        loged = true;
-                                    }
-                                    else if(register == false)
-                                    {
-                                        printf("No es posible registrarse. Reinicie el cliente");
-                                    }
-                                }
-                                //TODO : TODO LO ANTERIOR DENTRO DE UN BLUCE?
+                                //TODO : TODO LO SIGUIENTE DENTRO DE UN BLUCE?
                                 // TODO: Aqui todo lo del juego??
 
                                 if(strcmp(buffer,"INICAR-PARTIDA\n") == 0)
                                 {
+                                    //TODO: ..
                                     printf("+Ok. A organizar las colas");
                                     
                                 }
@@ -343,8 +356,8 @@ int main ( )
                                 }
 
                                 else
-                                {   // TODO: Aqui llamar a la funcion del juego ??
-
+                                {   // TODO: RECEPCION DE MENSAJES POR PARTE DE LOS CLIENTES
+                                    //TODO: Mensaje de error
                                     sprintf(identificador,"<%d>: %s",i,buffer);
                                     bzero(buffer,sizeof(buffer));
 
@@ -418,7 +431,7 @@ void FichRead()
     {
         getline(fichero,quote);
         if (! fichero.eof()) 
-            cout << quote << endl;
+        cout << quote << endl;
     }
     fichero.close();
  
@@ -431,26 +444,4 @@ void manejador (int signum){
     signal(SIGINT,manejador);
     
     //Implementar lo que se desee realizar cuando ocurra la excepción de ctrl+c en el servidor
-}
-
-void register(char[350] name, char[350] pass)
-{
-    FILE *fp;
-    char[] c;
-    fp = fopen("users.txt", "r+");
-        while(!feof(fp))
-        {
-          fread(&w[i],sizeof(w[i]),1,fp);
-          if(strcmp(checker,w[i].name)==0)
-            {
-            printf("\n\n\t\t\tUSERNAME ALREDY EXISTS");
-            clrscr();
-            reg();
-            }
-          else
-          {
-            strcpy(w[i].name,checker);
-            break;
-          }
-        }
 }
