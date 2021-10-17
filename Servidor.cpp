@@ -130,9 +130,82 @@ class game{ // TODO: class game:player() ??
         return Descriptor2;
     }
 };
+//ESTRUCTURA LOGIN
+struct login{
+    char username[30];
+    char password[30];
+};
+
 
 // TODO: Funciones de registro, una para user, otra para pass
-// TODO: Funciones de inicio de sesión
+void registration()
+{
+    char username[30];
+    char password[30];
+
+    FILE *log;
+    log=fopen("users.txt","w");
+    if(log == NULL)
+    {
+        fputs("Error abriendo el fichero \n", stderr);
+        exit(1);
+    }
+
+    struct login 1;
+
+    //TODO: Hacerlo todo en la misma linea
+    printf("Introduzca su nombre de usuario\n");
+    fgets(username, 30, stdin);
+    printf("Introduzca su password");
+    fgets(password, 30, stdin);
+
+    fwrite(&1,sizeof(1), 1, log);
+    fclose(log);
+    system("CLS");
+
+    //TODO: Que lleve a lista de espera
+}
+// TODO: Comprobar funciones de inicio de sesión
+
+void login(){
+    char USUARIOcheck[30]="USUARIO";
+    char PASSWORDcheck[30]="PASSWORD";
+    char username[30];
+    char password[30];
+    FILE *log;
+
+    log = fopen("users.txt","r");
+    if(log==NULL){
+        system("Error abriendo el archivo\n", stderr);
+        exit(1);
+    }
+
+    struct login 1;
+
+    printf("Introduce tu usuario y password como en el ejemplo\n");
+    printf("\nUSUARIO nombredeusuario\n\n");
+    scanf("%s\n", USUARIOcheck);
+    fgets(username, 30, stdin);
+    printf("Introduce tu password como en el ejemplo\n");
+    printf("\nPASSWORD tupassword\n\n");
+    scanf("%s\n", PASSWORDcheck);
+    fgets(password, 30, stdin);
+    while(fread(&1,sizeof(1), 1, log))
+    {
+        if(strcmp(username,1.username)==0 && strcmp(password,1.password)==0)
+        {
+            printf("Inicio de sesion exitoso\n");
+        }
+        else
+        {
+            printf("Error en las credenciales\n");
+        }
+    }
+    fclose(log);
+    return;
+}
+
+
 // TODO: Funciones que comprueben si un user esta registrado o no
 //TODO : usar strtok
 
