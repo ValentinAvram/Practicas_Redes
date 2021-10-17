@@ -10,6 +10,7 @@
 #include <time.h>
 #include <arpa/inet.h>
 #include <ifstream.h>
+#include <iostream>
 
 
 #define MSG_SIZE 350
@@ -20,6 +21,27 @@
 
 using namespace std;
 //TODO: Hacer funciones de "Existe X letra"
+
+//TODO: Funcion encriptar refran
+string encryptQuote(string quote){
+    string equote;
+    for(int i = 0; i<quote.size(); i++){
+        if(quote[i]== ' '){
+            equote[i] = ' ';
+        }
+        else{
+            equote[i] = '-';
+        }
+    }
+
+    //MOSTRAR EL MENSAJE
+
+    for(int k=0; k<quote.size(); k++){
+        printf("%c",equote[k]);
+    }
+    printf("\n");
+}
+
 //TODO: Unico recieve
 
 /* Constructor declarado en la definición de la clase como función prototipo
