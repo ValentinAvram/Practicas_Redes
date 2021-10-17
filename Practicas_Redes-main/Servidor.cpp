@@ -242,12 +242,7 @@ class game{ // TOO: class game:player() ??
     }
 };
 
-// TODO: Posible pasar de char a string
-// TODO: Funciones de registro, una para user, otra para pass
 
-// TODO: Comprobar funciones de inicio de sesión
-
-string loginPASS(string texto, string user)
 {
     bool exists =false;
     char separator = ' ';
