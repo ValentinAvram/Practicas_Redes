@@ -4,14 +4,15 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 #include <signal.h>
 #include <unistd.h>
 #include <time.h>
 #include <arpa/inet.h>
 #include <ifstream.h>
 #include <iostream>
-
+#include <bits/stdc++.h>
+#include<vector>
 
 #define MSG_SIZE 350
 #define MAX_CLIENTS 30
@@ -23,6 +24,29 @@ using namespace std;
 //TODO: Hacer funciones de "Existe X letra"
 
 //TODO: Funcion encriptar refran
+
+string strings[30];
+
+// create custom split() function  
+void split (string str, char seperator)  
+{  
+    int currIndex = 0, i = 0;  
+    int startIndex = 0, endIndex = 0;  
+    while (i <= str.length())  
+    {  
+        if (str[i] == seperator || i == str.length())  
+        {  
+            endIndex = i;  
+            string subStr = "";  
+            subStr.append(str, startIndex, endIndex - startIndex);  
+            strings[currIndex] = subStr;  
+            currIndex += 1;  
+            startIndex = endIndex + 1;  
+        }  
+        i++;  
+        }     
+} 
+
 string encryptQuote(string quote){
     string equote;
     for(int i = 0; i<quote.size(); i++){
@@ -42,19 +66,6 @@ string encryptQuote(string quote){
     printf("\n");
 }
 
-//TODO: Unico recieve
-
-/* Constructor declarado en la definición de la clase como función prototipo
-Persona(const std::string& nombre,int edad, float peso, float estatura);
-// Implementación fuera de la definición de la clase
-
-Persona::Persona(const string& nombre,int edad, float peso, float estatura){
-  this -> nombre = nombre; 
-  this -> edad = edad;
-  this -> peso = peso;
-  this -> estatura = estatura;
-}
-*/
 
 class player{
 
@@ -66,6 +77,15 @@ class player{
     int points;
 
     public:
+
+    player(int sd, int status, string nombre, string contra, int puntos) 
+    {
+    this->descriptor = sd;
+    this->status = status;
+    this->name = nombre;
+    this->pass = contra;
+    this->points = puntos;
+    }
 
     //Setters
     void setDescriptor(int desc)
@@ -118,17 +138,27 @@ class player{
     {
         return points;
     }
-    //TODO: Añadir Getters y Setters
 };
 
-class game{ // TODO: class game:player() ??
+class game{ // TOO: class game:player() ??
 
     private:
     int descriptor1, descriptor2;
+    string name1, name2;
+    int points1, points2;
     //TODO: Metodo publico que sea el juego entero?
-    //TODO: Añadir Getters y Setters
-
+    //TODO: CONSTRUCTORES
     public:
+
+    game(int sd1, int sd2, string nombre1, string nombre2, int puntos1, int puntos2) 
+    {
+    this->descriptor1 = sd1;
+    this->descriptor2 = sd2;
+    this->name1 = name1;
+    this->name2 = name2;
+    this->points1 = points1;
+    this->points2 = points2;
+    }
 
     //Setters
     void setDescriptor1(int sd1)
@@ -140,7 +170,25 @@ class game{ // TODO: class game:player() ??
     {
         descriptor2 = sd2;
     }
+    void setName1(string name1)
+    {
+        name1 = nombre1;
+    }
+    
+    void setName2(int name2)
+    {
+        name2 = nombre2;
+    }
 
+    void setPoints1(int points2)
+    {
+        points1 = puntos1;
+    }
+    
+    void setPoints2(int points2)
+    {
+        points2 = puntos2;
+    }
     //Getters
     int getDescriptor1()
     {
@@ -151,95 +199,158 @@ class game{ // TODO: class game:player() ??
     {
         return Descriptor2;
     }
-};
-//ESTRUCTURA LOGIN
-struct login{
-    char username[30];
-    char password[30];
+
+    string getName1()
+    {
+        return name1;
+    }
+    
+    string getName2()
+    {
+        return name2;
+    }
+
+    int getPoints1()
+    {
+        return points1;
+    }
+
+    int getPoints2()
+    {
+        return points2;
+    }
 };
 
-
+// TODO: Posible pasar de char a string
 // TODO: Funciones de registro, una para user, otra para pass
-void registration()
+void registration(char[MSG_SIZE] texto)
 {
     char username[30];
     char password[30];
+    char * aux;
 
-    FILE *log;
-    log=fopen("users.txt","w");
-    if(log == NULL)
-    {
-        fputs("Error abriendo el fichero \n", stderr);
-        exit(1);
+    char separator = ' ';
+    texto.erase(0,14);
+    split(texto, separator);  
+    string user = strings[0];
+    string pass = strings[2];
+
+    ifstream fich("users.txt");
+    string linea;
+    
+    while (getline(fich, linea)) {
+    
+        split(linea, separator);
+        
+        string aux = strings[0];
+        if(aux == user)
+        {
+            cout << "\n-Err. Nombre de usuario ya registrado. Intentelo de nuevo\n";
+            salirCliente(i,&readfds,&numClientes,arrayClientes);
+        }
     }
+    fich.close();
 
-    struct login 1;
-
-    //TODO: Hacerlo todo en la misma linea
-    printf("Introduzca su nombre de usuario\n");
-    fgets(username, 30, stdin);
-    printf("Introduzca su password");
-    fgets(password, 30, stdin);
-
-    fwrite(&1,sizeof(1), 1, log);
-    fclose(log);
-    system("CLS");
-
-    //TODO: Que lleve a lista de espera
+    ofstream fich2("users.txt", ios_base::app | ios_base::out);    
+    if (!fich2)
+    {
+        cout << "Error al abrir el archivo\n";
+        salirCliente(i,&readfds,&numClientes,arrayClientes);
+    }
+    fich2 <<user<<" "<<pass<< endl;
+    fich2.close();
+    
+    //TODO: Que lleve a lista de espera. Crear instancia fuera de la funcion, y set status
 }
 // TODO: Comprobar funciones de inicio de sesión
 
-void login(){
-    char USUARIOcheck[30]="USUARIO";
-    char PASSWORDcheck[30]="PASSWORD";
-    char username[30];
-    char password[30];
-    FILE *log;
+String loginUSER(char[MSG_SIZE] texto)
+{
+    bool exists =false;
+    char separator = ' ';
+    texto.erase(0,8);
+    split(linea, separator);
+    string user = strings[0];
+    strung aux = "0";
+    ifstream fich("users.txt");
+    string linea;
 
-    log = fopen("users.txt","r");
-    if(log==NULL){
-        system("Error abriendo el archivo\n", stderr);
-        exit(1);
+    while (getline(fich, linea) && exist == false) {
+        
+        split(linea, separator);
+        string auxUser = strings[0];
+        string auxPass = strings[1];
+        
+        if(auxUser == user)
+        {
+            cout << "\n+Ok. Usuario correcto\n";
+            exists=true;
+            aux = user;
+        }
+        
     }
-
-    struct login 1;
-
-    printf("Introduce tu usuario y password como en el ejemplo\n");
-    printf("\nUSUARIO nombredeusuario\n\n");
-    scanf("%s\n", USUARIOcheck);
-    fgets(username, 30, stdin);
-    printf("Introduce tu password como en el ejemplo\n");
-    printf("\nPASSWORD tupassword\n\n");
-    scanf("%s\n", PASSWORDcheck);
-    fgets(password, 30, stdin);
-    while(fread(&1,sizeof(1), 1, log))
+    fich.close();
+    
+    if(exists == false)
     {
-        if(strcmp(username,1.username)==0 && strcmp(password,1.password)==0)
-        {
-            printf("Inicio de sesion exitoso\n");
-        }
-        else
-        {
-            printf("Error en las credenciales\n");
-        }
+        cout <<"\n-Err. Usuario incorrecto\n"
+        salirCliente(i,&readfds,&numClientes,arrayClientes);
     }
-    fclose(log);
-    return;
+    return aux;
 }
 
+String loginPASS(char[MSG_SIZE] texto, string user)
+{
+    bool exists =false;
+    char separator = ' ';
+    texto.erase(0,8);
+    split(linea, separator);
+    string pass = strings[0];
+    string aux = "0";
 
-// TODO: Funciones que comprueben si un user esta registrado o no
-//TODO : usar strtok
+    ifstream fich("users.txt");
+    string linea;
+
+    while (getline(fich, linea) && exist == false) {
+        
+        split(linea, separator);
+        if(cadenaComienzaCon(linea, user))
+        {
+            string auxUser = strings[0];
+            string auxPass = strings[1];
+        }
+        
+        if(auxPass == pass)
+        {
+            cout << "\n+Ok. Usuario correcto\n";
+            exists=true;
+            aux = pass;
+        }
+    }
+    fich.close();
+
+    if(exists == false)
+    {
+        cout <<"\n-Err. Usuario incorrecto\n"
+        salirCliente(i,&readfds,&numClientes,arrayClientes);
+    }
+    return pass;
+}
+
+int cadenaComienzaCon(const char *cadena1, const char *cadena2) {
+  int longitud = strlen(cadena2);
+  if (strncmp(cadena1, cadena2, longitud) == 0) return 1;
+  return 0;
+}
 
 void manejador(int signum);
 void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClientes[]);
-void FichRead();
 
 int main ( )
 {
 
     system("clear");
-
+    
 	int sd, new_sd;
 	struct sockaddr_in sockname, from; // Almacen de direcciones
 	char buffer[MSG_SIZE];
@@ -251,9 +362,9 @@ int main ( )
     int numClientes = 0;
     int i,j,k,recibidos,on,ret,salida;
     
-    bool register = true;
-    bool login = true;  
-
+    bool register = false;
+    bool login = false;  
+    bool loged = false;
     // Apertura del socket
   	sd = socket (AF_INET, SOCK_STREAM, 0);
 	if (sd == -1)
@@ -339,48 +450,6 @@ int main ( )
                                     numClientes++;
                                     FD_SET(new_sd,&readfds);
 
-                                // TODO: Hacer funcion BufferEmpiezaPorX()
-                                // TODO: FUNCIONES DE REGISTRO, una para user, otra para pass???
-                                // TODO: FUNCIONES DE LOGIN,
-                                // TODO: Diferenciar usuario registrado de no registrado
-                                // TODO: PARTIR BUFFER EN VARIABLES (strtok()), cambiar buffer por las variables
- 
-                                    while(loged == false)
-                                    {
-                                        if(strcmp(var1, "USUARIO ") == 0)
-                                        {   
-                                            //TODO: Funcion comprobar que usuario existe y aux ++
-                                            //if(existe){ok}
-                                            //else{exit()}
-                                            printf("Pillar user\n");
-                                            register = false;
-                                        }
-                                        
-                                        //TODO: Si existe el usuario, comprobar que corresponder con las pass (buscar user +1 linea?)
-                                        if(strcmp(buffer, "PASSWORD") == 0)
-                                        {
-                                            //if(concuerda){ok}
-                                            //else{exit()}
-                                            printf("Pillar pass\n");
-                                            login = true;
-                                            if(loged = true)
-                                            {                                            
-                                                strcpy(buffer, "Inicio de sesión correcto, bienvenido, %d\n",/*Username*/);
-                                            }
-                                        }
-
-                                        if(strcmp(buffer, "REGISTRO") == 0 && register == true)
-                                        {
-                                            //TODO: Registro, comprobar que no exista ya, etc etc etc
-                                            printf("Pillar REGISTRO\n");
-                                            strcpy(buffer, "Registro correcto, bienvenido, %d\n",/*Username*/);
-                                            loged = true;
-                                        }
-                                        else if(register == false)
-                                        {
-                                            strcpy(buffer, "No es posible registrarse. Reinicie el cliente\n");
-                                        }
-                                    }
                                     // NombreClase nombre_objeto();
                                     // Enviar mensaje al nuevo cliente
                                     send(new_sd,buffer,sizeof(buffer),0);
@@ -401,8 +470,6 @@ int main ( )
                                 }
                                 
                             }
-                            
-                            
                         }
                         else if (i == 0)
                         {
@@ -434,25 +501,70 @@ int main ( )
                             recibidos = recv(i,buffer,sizeof(buffer),0);
                             if(recibidos > 0)
                             {
+                                // TODO: FUNCIONES DE REGISTRO, una para user, otra para pass???
+                                // TODO: FUNCIONES DE LOGIN,
+                                // TODO: Diferenciar usuario registrado de no registrado
+                                // TODO: PARTIR BUFFER EN VARIABLES (strtok()), cambiar buffer por las variables
                                 //TODO : TODO LO SIGUIENTE DENTRO DE UN BLUCE?
                                 // TODO: Aqui todo lo del juego??
+                                while(loged == false)
+                                {
+                                    if(cadenaComienzaCon(buffer, "REGISTER -u"))
+                                    {                                    
+                                        login = false;
+                                        register = true;
+                                        registration(buffer);
+                                        bzero(buffer,sizeof(buffer));
+                                    }
+                                    else if(cadenaComienzaCon(buffer, "USUARIO")
+                                    {
+                                        login = true;
+                                        register = false;
+                                        string user = loginUSER(buffer);
+                                        bzero(buffer,sizeof(buffer));
+
+                                    }
+                                    if(cadenaComienzaCon(buffer, "PASSWORD" && login == true)
+                                    {
+                                        string pass = loginPASS(buffer, user);
+                                        bzero(buffer,sizeof(buffer));
+                                    }
+                                    string userName = user;
+                                    string userPass = pass;
+
+                                    vector<player> jugadores;
+                                    
+                                    if(user != 0 && pass != 0)
+                                    {
+                                        for(int i = 0; i < 30; i++)
+                                        { //TODO: PROBABLY MAL
+                                            jugadores[0] = new player(new_sd, 1, userName, userPass, 0)
+                                        }
+                                        loged = true;
+                                    }
+                                    else
+                                    {
+                                        salirCliente(i,&readfds,&numClientes,arrayClientes);
+                                    }
+                                }
 
                                 if(strcmp(buffer,"INICAR-PARTIDA\n") == 0)
                                 {
                                     //TODO: ..
                                     printf("+Ok. A organizar las colas");
-                                    
+                                    bzero(buffer,sizeof(buffer));
                                 }
 
                                 if(strcmp(buffer,"SALIR\n") == 0)
                                 {
                                     printf("+Ok. Desconexion procesada");
+                                    bzero(buffer,sizeof(buffer));
                                     salirCliente(i,&readfds,&numClientes,arrayClientes); 
                                 }
 
                                 else
                                 {   // TODO: RECEPCION DE MENSAJES POR PARTE DE LOS CLIENTES
-                                    //TODO: Mensaje de error
+                                    // TODO: Mensaje de error
                                     sprintf(identificador,"<%d>: %s",i,buffer);
                                     bzero(buffer,sizeof(buffer));
 
@@ -510,29 +622,6 @@ void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClie
 
 
 }
-void FichRead()
-{
-    string nombre = "refranes.txt"
-    string quote;    
-    
-    ifstream fichero(nombre.c_str());
-    if( fichero.fail() )
-    {
-        cout << "No existe el fichero!" << endl;
-        exit(1);
-    }
- 
-    while (! fichero.eof()) 
-    {
-        getline(fichero,quote);
-        if (! fichero.eof()) 
-        cout << quote << endl;
-    }
-    fichero.close();
- 
-    ifstream fichero(nombre.c_str());
-}
-
 
 void manejador (int signum){
     printf("\nSe ha recibido la señal sigint\n");
