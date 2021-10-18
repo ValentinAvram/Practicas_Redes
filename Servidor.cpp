@@ -14,6 +14,7 @@
 #include <vector>
 #include <fstream>
 
+
 #define MSG_SIZE 350
 #define MAX_CLIENTS 30
 #define PORT 2050
@@ -147,7 +148,7 @@ bool Resolver(string quote){
     cout<<"Cuidado, si falla aunque sea por ortografia perdera"<<endl;
     getline(cin, resolve);
     //Espera dramatica
-    sleep(15);
+    sleep(1);
     cout<<"Y la respuesta es...";
     sleep(10);
     if (quote.compare(resolve) == -1){
@@ -180,68 +181,18 @@ string getRandomLine(){
     return line;
 }
 
-class player{
-
-	private:
-	int descriptor;
-    int status; // 0 conectado, 1 en espera a game, 2 en game 
-    int points;
-
-    public:
-    player();
-    player(int sd, int status, int puntos) 
-    {
-    this->descriptor = sd;
-    this->status = status;
-
-    this->points = puntos;
-    }
-
-    //Setters
-    void setDescriptor(int desc)
-    {
-        descriptor = desc;
-    }
-
-    void setStatus(int status)
-    {
-        status=status;
-    }
-
-    void setPoints(int puntos)
-    {
-        points = puntos;
-    }
-    
-    //Getters
-    int getDescriptor()
-    {
-        return descriptor;
-    }
-
-    int getStatus()
-    {
-        return status;
-    } 
-
-    int getPoints()
-    {
-        return points;
-    }
-};
 
 class game{ 
 
     private:
     int descriptor1, descriptor2;
-    string name1, name2;
     int points1, points2;
     //TODO: Metodo publico que sea el juego entero?
     //TODO: CONSTRUCTORES
     public:
 
     game();
-    game(int sd1, int sd2, int puntos1, int puntos2,player playerOne, player playerTwo) 
+    game(int sd1, int sd2, int puntos1, int puntos2,player playerOne, player playerTwo,char buffer[350]) 
     {
     this->descriptor1 = sd1;
     this->descriptor2 = sd2;
@@ -290,7 +241,7 @@ class game{
         return points2;
     }
 
-    void startGame(player playerOne, player playerTwo){
+    void startGame(int descriptor1, int descriptor2, char buffer[350]){
         //Seleccionamos un refran aleatorio
         string quote = getRandomLine();
         //Encriptamos el refran aleatorio
@@ -301,6 +252,8 @@ class game{
         //Pasamos el descriptor de ambos jugadores
         setDescriptor1(playerOne.getDescriptor());
         setDescriptor2(playerTwo.getDescriptor());
+        int sd1 = playerOne.getDescriptor();
+        int sd2 = playerTwo.getDescriptor();
         //Obtenemos el nombre de ambos jugadores
         //Inicializamos los puntos de ambos jugadores a 0 antes de que comience la partida
         setPoints1(0);
@@ -309,22 +262,25 @@ class game{
         //La partida comienza con un bucle en el que no termina mientras este completo el panel
         //El sistema de turnos se basa en dos bucles en torno a la variable turn
         int turn = 1;
-        //TODO: Funcion salir
+        //TODO: CREAR FUNCION QUE BORRE los dos sds del array, y cuando
         int complete = 77;
         //Creamos una variable para la letra que juegue cada jugador
-        string letter;
         while(complete != -1){
             //Juega el primer jugador
             while(turn == 1){
                 //Mostramos el panel
                 cout<<enquote<<endl;
 
-                cout<<"Que desea jugar"<<endl;
+                
+                bzero(&buffer,sizeof(&buffer));
+                strcpy(buffer,"Que desea jugar\n");
+                send(sd1,&buffer,sizeof(&buffer),0);
                 //TODO: Spliteo para que lea solo la letra (ejemplo: CONSONANTE l)
-                getline(cin, letter);
+                recv(sd1,&buffer,sizeof(&buffer),0);
+                string texto = charToString(buffer, sizeof(&buffer) / sizeof(char));
                 //Vemos si quiere resolver el panel
-                if(letter == "RESOLVER"){
-                    if(Resolver(letter)==true){
+                if(texto == "RESOLVER"){
+                    if(Resolver(texto)==true){
                         turn = 10;
                         complete = -1;
                     }
@@ -336,13 +292,13 @@ class game{
 
                 else{
                 //Comprobamos si es vocal
-                if(isVowel(letter) == true){
+                if(isVowel(texto) == true){
                     //Comprobamos si tiene puntos para comprar la vocal
                     if(hasMoney(getPoints1()) == true){
                         //Compra la vocal
                         setPoints1(getPoints1() - 50);
-                        if(getRight(quote, letter) == true){
-                            enquote = revealLetterInPanel(quote, enquote, letter);
+                        if(getRight(quote, texto) == true){
+                            enquote = revealLetterInPanel(quote, enquote, texto);
                             //Comprobamos si ha ganado
                             if(complete = quote.compare(enquote) == -1){
                                 turn = 10;
@@ -360,14 +316,16 @@ class game{
                     }
                     //No tiene puntos para comprar una vocal
                     else{
-                        cout<<"No puedes comprar vocal"<<endl;
+                        bzero(&buffer,sizeof(&buffer));
+                        strcpy(buffer,"No puedes comprar vocal\n");
+                        send(sd1,&buffer,sizeof(&buffer),0);
                         turn = 1;
                     }
                 }
                 //Ha elegido consonante
                 else{
-                        if(getRight(quote, letter) == true){
-                            enquote = revealLetterInPanel(quote, enquote, letter);
+                        if(getRight(quote, texto) == true){
+                            enquote = revealLetterInPanel(quote, enquote, texto);
                             //TODO: Solo gana 50 una vez y deberia ganar por las veces que acierta?
                             setPoints1(getPoints1() + 50 );
                             //Comprobamos si ha ganado
@@ -389,13 +347,15 @@ class game{
             }
         
             while(turn == 2){
-                cout<<enquote<<endl;
 
-                cout<<"Que desea jugar??"<<endl;
-
-                getline(cin, letter);
-                if(letter == "RESOLVER"){
-                    if(Resolver(letter) == true){
+                bzero(&buffer,sizeof(&buffer));
+                strcpy(buffer,"Que desea jugar\n");
+                send(sd2,&buffer,sizeof(&buffer),0);
+                recv(sd2,&buffer,sizeof(&buffer),0);
+                string texto = charToString(buffer, sizeof(&buffer) / sizeof(char));
+                
+                if(texto == "RESOLVER"){
+                    if(Resolver(texto) == true){
                         turn = 20;
                         complete = -1;
                     }
@@ -405,11 +365,11 @@ class game{
                     }
                 }
                 else{
-                if(isVowel(letter) == true){
+                if(isVowel(texto) == true){
                     if(hasMoney(getPoints2()) == true){
                         setPoints2(getPoints2() - 50);
-                        if(getRight(quote, letter)==true){
-                            enquote = revealLetterInPanel(quote, enquote, letter);
+                        if(getRight(quote, texto)==true){
+                            enquote = revealLetterInPanel(quote, enquote, texto);
                             if(complete = quote.compare(enquote) == -1){
                                 turn = 20;
                                 complete = -1;
@@ -423,14 +383,16 @@ class game{
                         }
                     }
                     else{
-                        cout<<"No tienes puntos para usar vocal"<<endl;
+                        bzero(&buffer,sizeof(&buffer));
+                        strcpy(buffer,"No tienes puntos para comprar vocal\n");
+                        send(sd2,&buffer,sizeof(&buffer),0);
                         turn = 2;
                     }
                 }
                 else{
-                    if(getRight(quote, letter)==true){
+                    if(getRight(quote, texto)==true){
                         setPoints2(getPoints2()+50);
-                        enquote=revealLetterInPanel(quote, enquote, letter);
+                        enquote=revealLetterInPanel(quote, enquote, texto);
                         if(complete = quote.compare(enquote) == -1){
                             turn = 20;
                             complete = -1;
@@ -449,17 +411,27 @@ class game{
             }
         }
         if(turn == 10){
-            cout<<"Ha ganado el jugador 1"<<endl;
+                bzero(&buffer,sizeof(&buffer));
+                strcpy(buffer,"Has perdido. Ha ganado el jugador 1\n");
+                send(sd2,&buffer,sizeof(&buffer),0);
+                bzero(&buffer,sizeof(&buffer));
+                strcpy(buffer,"Has ganado!!!!\n");
+                send(sd1,&buffer,sizeof(&buffer),0);
         }
         if(turn == 20){
-            cout << "Ha ganado el jugador 2"<<endl;
+                bzero(&buffer,sizeof(&buffer));
+                strcpy(buffer,"Has perdido. Ha ganado el jugador 2\n");
+                send(sd1,&buffer,sizeof(&buffer),0);
+                bzero(&buffer,sizeof(&buffer));
+                strcpy(buffer,"Has ganado!!!!\n");
+                send(sd2,&buffer,sizeof(&buffer),0);
         }
 
         finishGame(playerOne, playerTwo);
 
     }
 
-    void finishGame(player playerOne, player playerTwo){
+    void finishGame(int descriptor1, int descriptor2){
         playerOne.setStatus(0);
         playerTwo.setStatus(0);
         //TODO: Hay que hacer mas cosas?
@@ -482,9 +454,7 @@ void manejador(int signum);
 void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClientes[]);
 
 //TODO: Posible mal. player*
-vector <player *> jugadores;
 vector <game *> partidas;
-vector <player *> usuarios;
 
 int main ( )
 {
@@ -498,7 +468,7 @@ int main ( )
 	socklen_t from_len; //Length de la estructura de peticiones?
     fd_set readfds, auxfds; //Set de sockets que comprueben existencia de caracteres a leer //Crear mas colas?
 
-   	int arrayClientes[MAX_CLIENTS]; //Crear mas arrays por partidas
+   	int arrayClientes[MAX_CLIENTS]; //ESTE!!!!!
     int numClientes = 0;
     int i,j,k,recibidos,on,ret,salida;
     
@@ -691,8 +661,7 @@ int main ( )
                                         fich2.close();
                                         bzero(buffer,sizeof(buffer));
 
-                                        player newJugador;
-                                        usuarios.push_back(&newJugador);   
+  
                                     }
 
                                     else if(cadenaComienzaCon(buffer, "USUARIO"))
@@ -795,8 +764,6 @@ int main ( )
 
                                     if(user != "0" && pass != "0")
                                     {
-                                        player newJugador(i, 0, 0);
-                                        usuarios.push_back(&newJugador);
                                         loged = true;
                                     }
                                     else
@@ -810,28 +777,14 @@ int main ( )
 
 
                                 if(strcmp(buffer,"INICAR-PARTIDA\n") == 0)
-                                {   
-                                    if(jugadores.size()>19)
-                                    {
-                                        bzero(buffer,sizeof(buffer));
-                                        strcpy(buffer,"\n-Err. Numero maximo de jugadores en cola, intentelo mas tarde.\n");
-                                        send(arrayClientes[i],buffer , sizeof(buffer),0); 
-                                    }
+                                {   //TODO: Max 20 players. Otro array
                                     else
                                     {
                                         bzero(buffer,sizeof(buffer));
-                                        
-                                        for(i = 0; i < usuarios.size(); i++);
-                                        {
-                                            player jugador(usuarios[i]->getDescriptor(), usuarios[i]->getStatus(), usuarios[i]->getPoints());
-                                            jugadores.push_back(&jugador);
-                                        }
+
                                         for(i = 0; i < jugadores.size();i++);
-                                        {
-                                            player jugador1(jugadores[i]->getDescriptor(), jugadores[i]->getStatus(), jugadores[i]->getPoints());
-                                            player jugador2(jugadores[i+1]->getDescriptor(), jugadores[i+1]->getStatus(), jugadores[i+1]->getPoints());
-                                            game newGame(jugador1.getDescriptor(), jugador2.getDescriptor(),0,0,jugador1, jugador2);
-                                            newGame.startGame(jugador1,jugador2);
+                                        {   //TODO: ir cogiendo sds de la mierda
+                                            newGame.startGame(jugador1,jugador2, buffer);
                                             newGame.finishGame(jugador1,jugador2);
                                             i = i+2;
                                         }
