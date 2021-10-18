@@ -4,16 +4,15 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <stdlib.h>
-#include <string>
+#include <string.h>
 #include <signal.h>
 #include <unistd.h>
 #include <time.h>
 #include <arpa/inet.h>
-#include <fstream>
+#include <string>
 #include <iostream>
-#include <bits/stdc++.h>
 #include <vector>
-#include <chrono>
+#include <fstream>
 
 #define MSG_SIZE 350
 #define MAX_CLIENTS 30
@@ -25,12 +24,11 @@ using namespace std;
 //TODO: Hacer funciones de "Existe X letra"
 
 string strings[30];
-vector<player> jugadores(20);
-vector<game> partidas(10);
+
 char stringToChar(string texto)
 {
-    char buffer = const_cast<char>(texto.c_str());
-    return buffer;
+    char *buffer = const_cast<char*>(texto.c_str());
+    return *buffer;
 }
 
 //int char_size = sizeof(buffer) / sizeof(char);
@@ -179,26 +177,23 @@ string getRandomLine(){
             return line;
         }
     }
-    
+    return line;
 }
 
 class player{
 
 	private:
 	int descriptor;
-    int status; // 0 sin logear, 1 en espera a game, 2 en game
-	string name;
-    string password;
+    int status; // 0 conectado, 1 en espera a game, 2 en game 
     int points;
 
     public:
-
-    player(int sd, int status, string nombre, string contra, int puntos) 
+    player();
+    player(int sd, int status, int puntos) 
     {
     this->descriptor = sd;
     this->status = status;
-    this->name = nombre;
-    this->password = contra;
+
     this->points = puntos;
     }
 
@@ -211,16 +206,6 @@ class player{
     void setStatus(int status)
     {
         status=status;
-    }
-
-    void setName(string nombre)
-    {
-        name = nombre;
-    }
-
-    void setPassword(string contra)
-    {
-        password = contra;
     }
 
     void setPoints(int puntos)
@@ -237,16 +222,6 @@ class player{
     int getStatus()
     {
         return status;
-    }
-
-    string getName()
-    {
-        return name;
-    }
-
-    string getPass()
-    {
-        return password;
     } 
 
     int getPoints()
@@ -255,7 +230,7 @@ class player{
     }
 };
 
-class game{ // TOO: class game:player() ??
+class game{ 
 
     private:
     int descriptor1, descriptor2;
@@ -265,12 +240,11 @@ class game{ // TOO: class game:player() ??
     //TODO: CONSTRUCTORES
     public:
 
-    game(int sd1, int sd2, string nombre1, string nombre2, int puntos1, int puntos2) 
+    game();
+    game(int sd1, int sd2, int puntos1, int puntos2,player playerOne, player playerTwo) 
     {
     this->descriptor1 = sd1;
     this->descriptor2 = sd2;
-    this->name1 = name1;
-    this->name2 = name2;
     this->points1 = points1;
     this->points2 = points2;
     }
@@ -284,15 +258,6 @@ class game{ // TOO: class game:player() ??
     void setDescriptor2(int sd2)
     {
         descriptor2 = sd2;
-    }
-    void setName1(string nombre1)
-    {
-        name1 = nombre1;
-    }
-    
-    void setName2(string nombre2)
-    {
-        name2 = nombre2;
     }
 
     void setPoints1(int puntos1)
@@ -313,16 +278,6 @@ class game{ // TOO: class game:player() ??
     int getDescriptor2()
     {
         return descriptor2;
-    }
-
-    string getName1()
-    {
-        return name1;
-    }
-    
-    string getName2()
-    {
-        return name2;
     }
 
     int getPoints1()
@@ -347,8 +302,6 @@ class game{ // TOO: class game:player() ??
         setDescriptor1(playerOne.getDescriptor());
         setDescriptor2(playerTwo.getDescriptor());
         //Obtenemos el nombre de ambos jugadores
-        setName1(playerOne.getName());
-        setName2(playerTwo.getName());
         //Inicializamos los puntos de ambos jugadores a 0 antes de que comience la partida
         setPoints1(0);
         setPoints2(0);
@@ -496,10 +449,10 @@ class game{ // TOO: class game:player() ??
             }
         }
         if(turn == 10){
-            cout<<"Ha ganado "<<getName1()<<endl;
+            cout<<"Ha ganado el jugador 1"<<endl;
         }
         if(turn == 20){
-            cout << "Ha ganado "<<getName2()<<endl;
+            cout << "Ha ganado el jugador 2"<<endl;
         }
 
         finishGame(playerOne, playerTwo);
@@ -528,6 +481,11 @@ int cadenaComienzaCon(const char *cadena1, const char *cadena2) {
 void manejador(int signum);
 void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClientes[]);
 
+//TODO: Posible mal. player*
+vector <player *> jugadores;
+vector <game *> partidas;
+vector <player *> usuarios;
+
 int main ( )
 {
 
@@ -544,7 +502,7 @@ int main ( )
     int numClientes = 0;
     int i,j,k,recibidos,on,ret,salida;
     
-    bool register = false;
+    bool registrado = false;
     bool login = false;  
     bool loged = false;
     // Apertura del socket
@@ -558,8 +516,6 @@ int main ( )
     // Para reusar puertos
     on=1;
     ret = setsockopt( sd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
-
-
 
 	sockname.sin_family = AF_INET; // Siempre debe ser AF_INET
 	sockname.sin_port = htons(PORT); // Puerto para conexión
@@ -734,7 +690,11 @@ int main ( )
                                         fich2 <<user<<" "<<pass<< endl;
                                         fich2.close();
                                         bzero(buffer,sizeof(buffer));
+
+                                        player newJugador;
+                                        usuarios.push_back(&newJugador);   
                                     }
+
                                     else if(cadenaComienzaCon(buffer, "USUARIO"))
                                     {
                                         string texto = charToString(buffer, char_size);
@@ -826,21 +786,17 @@ int main ( )
                                             send(arrayClientes[i],buffer , sizeof(buffer),0);
                                             salirCliente(i,&readfds,&numClientes,arrayClientes);
                                         }
-
+                              
                                         bzero(buffer,sizeof(buffer));
                                     }
 
                                     string userName = user;
                                     string userPass = pass;
 
-                                    vector<player> jugadores;
-                                    
                                     if(user != "0" && pass != "0")
                                     {
-                                        for(int i = 0; i < 30; i++)
-                                        { //TODO: PROBABLY MAL// COMO HACER ESTO
-                                            //jugadores[0] = new player(new_sd, 1, userName, userPass, 0)
-                                        }
+                                        player newJugador(i, 0, 0);
+                                        usuarios.push_back(&newJugador);
                                         loged = true;
                                     }
                                     else
@@ -848,17 +804,38 @@ int main ( )
                                         bzero(buffer,sizeof(buffer));
                                         strcpy(buffer,"\n-Err. ERROR EN EL LOGIN 500\n");
                                         send(arrayClientes[i],buffer , sizeof(buffer),0);
-                                        salirCliente(i,&readfds,&numClientes,arrayClientes);
-                                        salirCliente(i,&readfds,&numClientes,arrayClientes);
+                                        salirCliente(i,&readfds,&numClientes,arrayClientes);;
                                     }
                                 }
 
 
                                 if(strcmp(buffer,"INICAR-PARTIDA\n") == 0)
-                                {
+                                {   
+                                    if(jugadores.size()>19)
+                                    {
+                                        bzero(buffer,sizeof(buffer));
+                                        strcpy(buffer,"\n-Err. Numero maximo de jugadores en cola, intentelo mas tarde.\n");
+                                        send(arrayClientes[i],buffer , sizeof(buffer),0); 
+                                    }
+                                    else
+                                    {
+                                        bzero(buffer,sizeof(buffer));
+                                        
+                                        for(i = 0; i < usuarios.size(); i++);
+                                        {
+                                            player jugador(usuarios[i]->getDescriptor(), usuarios[i]->getStatus(), usuarios[i]->getPoints());
+                                            jugadores.push_back(&jugador);
+                                        }
+                                        for(i = 0; i < jugadores.size();i++);
+                                        {
+                                            player jugador1(jugadores[i]->getDescriptor(), jugadores[i]->getStatus(), jugadores[i]->getPoints());
+                                            player jugador2(jugadores[i+1]->getDescriptor(), jugadores[i+1]->getStatus(), jugadores[i+1]->getPoints());
+                                            game newGame(jugador1.getDescriptor(), jugador2.getDescriptor(),0,0,jugador1, jugador2);
+                                            newGame.startGame(jugador1,jugador2);
+                                            newGame.finishGame(jugador1,jugador2);
+                                            i = i+2;
+                                        }
                                     //TODO: ..
-                                    printf("+Ok. A organizar las colas");
-                                    bzero(buffer,sizeof(buffer));
                                 }
 
                                 if(strcmp(buffer,"SALIR\n") == 0)
@@ -871,7 +848,7 @@ int main ( )
                                 else
                                 {   // TODO: RECEPCION DE MENSAJES POR PARTE DE LOS CLIENTES
                                     // TODO: Mensaje de error
-                                    sprintf(identificador,"<%d>: %s",i,buffer);
+                                    //sprintf(identificador,"<%d>: %s",i,buffer);
                                     bzero(buffer,sizeof(buffer));
 
                                     strcpy(buffer,identificador);
@@ -896,13 +873,14 @@ int main ( )
                 }
             }
 		}
-
+    }
 	close(sd);
 	return 0;
 	
 }
 
-void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClientes[]){
+void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClientes[])
+{
   
     char buffer[250];
     int j;
@@ -929,7 +907,8 @@ void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClie
 
 }
 
-void manejador (int signum){
+void manejador (int signum)
+{
     printf("\nSe ha recibido la señal sigint\n");
     signal(SIGINT,manejador);
     
