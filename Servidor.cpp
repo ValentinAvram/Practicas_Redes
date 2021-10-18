@@ -493,8 +493,8 @@ class game{ // TOO: class game:player() ??
     }
 
     void finishGame(player playerOne, player playerTwo){
-        playerOne.setStatus=0;
-        playerTwo.setStatus=0;
+        playerOne.setStatus(0);
+        playerTwo.setStatus(0);
         //TODO: Hay que hacer mas cosas?
     }
 };
