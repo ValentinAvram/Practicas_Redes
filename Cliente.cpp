@@ -23,6 +23,7 @@ int main (int argc, char const * argv)
 	}
 
 	int sd; // socket
+	char *dir_ip = argv[1];
 	struct sockaddr_in sockname;
 	char buffer[250];
 	socklen_t len_sockname;
@@ -40,7 +41,7 @@ int main (int argc, char const * argv)
 
 	sockname.sin_family = AF_INET;
 	sockname.sin_port = htons(2050);
-	sockname.sin_addr.s_addr =  inet_addr(argv[1]); //TODO: AÑADIR LA IP POR PANTALLA
+	sockname.sin_addr.s_addr =  inet_addr(dir_ip); //TODO: AÑADIR LA IP POR PANTALLA
 
 	len_sockname = sizeof(sockname);
 	

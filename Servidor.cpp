@@ -24,9 +24,24 @@
 using namespace std;
 //TODO: Hacer funciones de "Existe X letra"
 
-//TODO: Funcion encriptar refran
-
 string strings[30];
+
+char stringToChar(string texto)
+{
+    char *buffer = const_cast<char*>(texto.c_str());
+    return *buffer;
+}
+
+//int char_size = sizeof(buffer) / sizeof(char);
+string charToString(char* buffer[350], int char_size)
+{
+    int i;
+    string texto = "";
+    for (i = 0; i < char_size; i++) {
+        texto = texto + buffer[i];
+    }
+    return texto;
+}
 
 // create custom split() function  
 void split (string str, char seperator)  
@@ -150,7 +165,7 @@ bool Resolver(string quote){
 
 string getRandomLine(){
     string line;
-    int random=0;
+        int random=0;
     int numOfLines=8;
     ifstream File("refranes.txt");
 
@@ -504,121 +519,7 @@ class game{ // TOO: class game:player() ??
 //PARA VALENTIN: Hacer salir es facil pero no se como hacer que se desconecten
 //PARA VALENTIN: En teoria el juego esta terminado, a lo mejor hay bugs pero se corrigen ez
 
-// TODO: Funciones de registro, una para user, otra para pass
-void registration(char[MSG_SIZE] texto)
-{
-    char username[30];
-    char password[30];
-    char * aux;
-
-    char separator = ' ';
-    texto.erase(0,14);
-    split(texto, separator);  
-    string user = strings[0];
-    string pass = strings[2];
-
-    ifstream fich("users.txt");
-    string linea;
-    
-    while (getline(fich, linea)) {
-    
-        split(linea, separator);
-        
-        string aux = strings[0];
-        if(aux == user)
-        {
-            cout << "\n-Err. Nombre de usuario ya registrado. Intentelo de nuevo\n";
-            salirCliente(i,&readfds,&numClientes,arrayClientes);
-        }
-    }
-    fich.close();
-
-    ofstream fich2("users.txt", ios_base::app | ios_base::out);    
-    if (!fich2)
-    {
-        cout << "Error al abrir el archivo\n";
-        salirCliente(i,&readfds,&numClientes,arrayClientes);
-    }
-    fich2 <<user<<" "<<pass<< endl;
-    fich2.close();
-    
-    //TODO: Que lleve a lista de espera. Crear instancia fuera de la funcion, y set status
-}
-// TODO: Comprobar funciones de inicio de sesión
-
-String loginUSER(char[MSG_SIZE] texto)
-{
-    bool exists =false;
-    char separator = ' ';
-    texto.erase(0,8);
-    split(linea, separator);
-    string user = strings[0];
-    strung aux = "0";
-    ifstream fich("users.txt");
-    string linea;
-
-    while (getline(fich, linea) && exist == false) {
-        
-        split(linea, separator);
-        string auxUser = strings[0];
-        string auxPass = strings[1];
-        
-        if(auxUser == user)
-        {
-            cout << "\n+Ok. Usuario correcto\n";
-            exists=true;
-            aux = user;
-        }
-        
-    }
-    fich.close();
-    
-    if(exists == false)
-    {
-        cout <<"\n-Err. Usuario incorrecto\n"
-        salirCliente(i,&readfds,&numClientes,arrayClientes);
-    }
-    return aux;
-}
-
-String loginPASS(char[MSG_SIZE] texto, string user)
-{
-    bool exists =false;
-    char separator = ' ';
-    texto.erase(0,8);
-    split(linea, separator);
-    string pass = strings[0];
-    string aux = "0";
-
-    ifstream fich("users.txt");
-    string linea;
-
-    while (getline(fich, linea) && exist == false) {
-        
-        split(linea, separator);
-        if(cadenaComienzaCon(linea, user))
-        {
-            string auxUser = strings[0];
-            string auxPass = strings[1];
-        }
-        
-        if(auxPass == pass)
-        {
-            cout << "\n+Ok. Usuario correcto\n";
-            exists=true;
-            aux = pass;
-        }
-    }
-    fich.close();
-
-    if(exists == false)
-    {
-        cout <<"\n-Err. Usuario incorrecto\n"
-        salirCliente(i,&readfds,&numClientes,arrayClientes);
-    }
-    return pass;
-}
-
+// TODO: Funciones de registro, una para user, otra para pas
 int cadenaComienzaCon(const char *cadena1, const char *cadena2) {
   int longitud = strlen(cadena2);
   if (strncmp(cadena1, cadena2, longitud) == 0) return 1;
@@ -791,44 +692,168 @@ int main ( )
                                 // TODO: Aqui todo lo del juego??
                                 while(loged == false)
                                 {
+                                    string user = "0";
+                                    string pass = "0";
+                                    int char_size = sizeof(buffer) / sizeof(char);
                                     if(cadenaComienzaCon(buffer, "REGISTER -u"))
-                                    {                                    
+                                    {   
+                                        string texto = charToString(buffer, char_size);                                 
                                         login = false;
-                                        register = true;
-                                        registration(buffer);
+                                        registrado = true;
+                                        char separator = ' ';
+                                        texto.erase(0,14);
+                                        split(texto, separator);  
+                                        string user = strings[0];
+                                        string pass = strings[2];
+
+                                        ifstream fich("users.txt");
+                                        string linea;
+                                        
+                                        while (getline(fich, linea)) {
+                                        
+                                            split(linea, separator);
+                                            
+                                            string aux = strings[0];
+                                            if(aux == user)
+                                            {
+                                                bzero(buffer,sizeof(buffer));
+                                                strcpy(buffer,"\n-Err. Nombre de usuario ya registrado. Intentelo de nuevo\n"); 
+                                                send(arrayClientes[i],buffer , sizeof(buffer),0);
+                                                salirCliente(i,&readfds,&numClientes,arrayClientes);
+                                            }
+                                        }
+                                        fich.close();
+
+                                        ofstream fich2("users.txt", ios_base::app | ios_base::out);    
+                                        if (!fich2)
+                                        {
+                                            bzero(buffer,sizeof(buffer));
+                                            strcpy(buffer,"Error al abrir el archivo\n");
+                                            send(arrayClientes[i],buffer , sizeof(buffer),0);
+                                            salirCliente(i,&readfds,&numClientes,arrayClientes);
+                                        }
+                                        fich2 <<user<<" "<<pass<< endl;
+                                        fich2.close();
                                         bzero(buffer,sizeof(buffer));
                                     }
-                                    else if(cadenaComienzaCon(buffer, "USUARIO")
+                                    else if(cadenaComienzaCon(buffer, "USUARIO"))
                                     {
+                                        string texto = charToString(buffer, char_size);
                                         login = true;
-                                        register = false;
-                                        string user = loginUSER(buffer);
+                                        registrado = false;
+                                        bool exists =false;
+                                        char separator = ' ';
+                                        texto.erase(0,8);
+                                        split(texto, separator);
+                                        string user = strings[0];
+                                        string aux = "0";
+                                        ifstream fich("users.txt");
+                                        string linea;
+
+                                        while (getline(fich, linea) && exists == true) {
+                                            
+                                            split(linea, separator);
+                                            string auxUser = strings[0];
+                                            string auxPass = strings[1];
+                                            
+                                            if(auxUser == user)
+                                            {
+                                                bzero(buffer,sizeof(buffer));
+                                                strcpy(buffer,"\n+Ok. Usuario correcto\n");
+                                                send(arrayClientes[i],buffer , sizeof(buffer),0);
+                                                exists=true;
+                                                aux = user;
+                                            }  
+                                        }
+                                        fich.close();
+                                        
+                                        if(exists == false)
+                                        {
+                                            bzero(buffer,sizeof(buffer));
+                                            strcpy(buffer,"\n-Err. Usuario incorrecto\n");
+                                            send(arrayClientes[i],buffer , sizeof(buffer),0);
+                                            salirCliente(i,&readfds,&numClientes,arrayClientes);
+                                            
+                                        }
+                                        
                                         bzero(buffer,sizeof(buffer));
 
                                     }
-                                    if(cadenaComienzaCon(buffer, "PASSWORD" && login == true)
+
+                                    if(cadenaComienzaCon(buffer, "PASSWORD") && login == true)
                                     {
-                                        string pass = loginPASS(buffer, user);
+                                        bool exists =false;
+                                        string texto = charToString(buffer, char_size);
+                                        char separator = ' ';
+                                        texto.erase(0,8);
+                                        split(texto, separator);
+                                        string pass = strings[0];
+                                        string aux = "0";
+
+                                        ifstream fich("users.txt");
+                                        string linea;
+                                        string auxPass;
+
+                                        while (getline(fich, linea) && exists == false) {
+                                            
+                                            split(linea, separator);
+                                            //TODO: Pasar linea de string a char
+                                            char charLinea[MSG_SIZE];
+                                            strcpy(charLinea,linea.c_str());
+
+                                            char charUser[MSG_SIZE];
+                                            strcpy(charUser,user.c_str());
+                                            if(cadenaComienzaCon(charLinea, charUser) == 1)
+                                            {
+                                                string auxUser = strings[0];
+                                                string auxPass = strings[1];
+                                            }
+                                            
+                                            if(auxPass == pass)
+                                            {
+                                                bzero(buffer,sizeof(buffer));
+                                                strcpy(buffer,"\n+Ok. Usuario validado\n");
+                                                send(arrayClientes[i],buffer , sizeof(buffer),0);
+                                                exists=true;
+                                                aux = pass;
+                                            }
+                                        }
+                                        fich.close();
+
+                                        if(exists == false)
+                                        {
+                                            bzero(buffer,sizeof(buffer));
+                                            strcpy(buffer,"\n-Err. Usuario incorrecto\n");
+                                            send(arrayClientes[i],buffer , sizeof(buffer),0);
+                                            salirCliente(i,&readfds,&numClientes,arrayClientes);
+                                        }
+
                                         bzero(buffer,sizeof(buffer));
                                     }
+
                                     string userName = user;
                                     string userPass = pass;
 
                                     vector<player> jugadores;
                                     
-                                    if(user != 0 && pass != 0)
+                                    if(user != "0" && pass != "0")
                                     {
                                         for(int i = 0; i < 30; i++)
-                                        { //TODO: PROBABLY MAL
-                                            jugadores[0] = new player(new_sd, 1, userName, userPass, 0)
+                                        { //TODO: PROBABLY MAL// COMO HACER ESTO
+                                            //jugadores[0] = new player(new_sd, 1, userName, userPass, 0)
                                         }
                                         loged = true;
                                     }
                                     else
                                     {
+                                        bzero(buffer,sizeof(buffer));
+                                        strcpy(buffer,"\n-Err. ERROR EN EL LOGIN 500\n");
+                                        send(arrayClientes[i],buffer , sizeof(buffer),0);
+                                        salirCliente(i,&readfds,&numClientes,arrayClientes);
                                         salirCliente(i,&readfds,&numClientes,arrayClientes);
                                     }
                                 }
+
 
                                 if(strcmp(buffer,"INICAR-PARTIDA\n") == 0)
                                 {
