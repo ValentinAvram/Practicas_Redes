@@ -25,11 +25,12 @@ using namespace std;
 //TODO: Hacer funciones de "Existe X letra"
 
 string strings[30];
-
+vector<player> jugadores(20);
+vector<game> partidas(10);
 char stringToChar(string texto)
 {
-    char *buffer = const_cast<char*>(texto.c_str());
-    return *buffer;
+    char buffer = const_cast<char>(texto.c_str());
+    return buffer;
 }
 
 //int char_size = sizeof(buffer) / sizeof(char);
@@ -64,7 +65,7 @@ void split (string str, char seperator)
 } 
 
 string encryptQuote(string quote){
-     string equote = "";
+    string equote = "";
     int n= quote.size();
     char aux[n+1];
 
