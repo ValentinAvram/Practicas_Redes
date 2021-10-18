@@ -12,7 +12,8 @@
 #include <ifstream.h>
 #include <iostream>
 #include <bits/stdc++.h>
-#include<vector>
+#include <vector>
+#include <chrono>
 
 #define MSG_SIZE 350
 #define MAX_CLIENTS 30
@@ -48,24 +49,124 @@ void split (string str, char seperator)
 } 
 
 string encryptQuote(string quote){
-    string equote;
+     string equote = "";
+    int n= quote.size();
+    char aux[n+1];
+
+    //Pasamos de string a char
+    strcpy(aux, quote.c_str());
+
+
     for(int i = 0; i<quote.size(); i++){
-        if(quote[i]== ' '){
-            equote[i] = ' ';
+        if(aux[i]== ' '){
+            aux[i] = ' ';
         }
         else{
-            equote[i] = '-';
+            aux[i] = '-';
         }
     }
 
-    //MOSTRAR EL MENSAJE
-
-    for(int k=0; k<quote.size(); k++){
-        printf("%c",equote[k]);
+    //Pasamos de char a string
+    int size = sizeof(aux) / sizeof(char);
+    for(int j=0; j<size; j++){
+        equote = equote + aux[j];
     }
-    printf("\n");
+
+    return equote;
 }
 
+string revealLetterInPanel(string quote, string equote, string letter){
+    int count=0;
+    for(int i = 0; i<quote.size(); i++){
+        if(quote[i]==letter[0]){
+            equote[i] = quote[i];
+            count ++;
+        }
+    }
+    cout<<"Hay "<<count<<" "<<letter<<endl;
+
+    return equote;
+}
+
+bool getRight(string quote, string letter){
+    for(int i = 0; i<quote.size(); i++){
+        if(quote[i] == letter[0]){
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool isVowel(string letra){
+    if(letra == "a"){
+        return true;
+    }
+
+    if(letra == "e"){
+        return true;
+    }
+
+    if(letra == "i"){
+        return true;
+    }
+
+    if(letra == "o"){
+        return true;
+    }
+
+    if(letra == "u"){
+        return true;
+    }
+
+    return false;
+}
+
+bool hasMoney(int points){
+    if(points<50){
+        return false;
+    }
+    return true;
+}
+
+bool Resolver(string quote){
+    string resolve;
+    cout<<"Introduzca el refran"<<endl;
+    cout<<"Cuidado, si falla aunque sea por ortografia perdera"<<endl;
+    getline(cin, resolve);
+    //Espera dramatica
+    sleep(15);
+    cout<<"Y la respuesta es..."
+    sleep(10);
+    if (quote.compare(resolve) == -1){
+        cout<<"CORRECTA!!!"<<endl;
+        return true;
+    }
+    else{
+        cout<<"INCORRECTA"<<endl;
+        return false;
+    }
+}
+
+string getRandomLine(){
+    string line;
+    int random=0;
+    int numOfLines=8;
+    ifstream File("refranes.txt");
+
+    srand(time(0));
+    random = rand() % 8;
+
+    while(getline(File,line))
+    {
+        ++numOfLines;
+
+        if(numOfLines == random){
+            return line;
+        }
+    }
+    
+}
 
 class player{
 
@@ -175,7 +276,7 @@ class game{ // TOO: class game:player() ??
         name1 = nombre1;
     }
     
-    void setName2(int name2)
+    void setName2(string name2)
     {
         name2 = nombre2;
     }
@@ -219,9 +320,190 @@ class game{ // TOO: class game:player() ??
     {
         return points2;
     }
+
+    void startGame(player playerOne, player playerTwo){
+        //Seleccionamos un refran aleatorio
+        string quote = getRandomLine();
+        //Encriptamos el refran aleatorio
+        string enquote = encryptQuote(quote);
+        //En primer lugar cambiamos el status de los jugadores
+        playerOne.setStatus(2);
+        playerTwo.setStatus(2);
+        //Pasamos el descriptor de ambos jugadores
+        setDescriptor1(playerOne.getDescriptor());
+        setDescriptor2(playerTwo.getDescriptor());
+        //Obtenemos el nombre de ambos jugadores
+        setName1(playerOne.getName());
+        setName2(playerTwo.getName());
+        //Inicializamos los puntos de ambos jugadores a 0 antes de que comience la partida
+        setPoints1(0);
+        setPoints2(0);
+        //Comenzamos la partida
+        //La partida comienza con un bucle en el que no termina mientras este completo el panel
+        //El sistema de turnos se basa en dos bucles en torno a la variable turn
+        int turn = 1;
+        //TODO: Funcion salir
+        int complete = 77;
+        //Creamos una variable para la letra que juegue cada jugador
+        string letter;
+        while(complete != -1){
+            //Juega el primer jugador
+            while(turn == 1){
+                //Mostramos el panel
+                cout<<enquote<<endl;
+
+                cout<<"Que desea jugar"<<endl;
+                //TODO: Spliteo para que lea solo la letra (ejemplo: CONSONANTE l)
+                getline(cin, letter);
+                //Vemos si quiere resolver el panel
+                if(letter == "RESOLVER"){
+                    if(Resolver(letter)==true){
+                        turn = 10;
+                        complete = -1;
+                    }
+                    else{
+                        turn = 20;
+                        complete = -1;
+                    }
+                }
+
+                else{
+                //Comprobamos si es vocal
+                if(isVowel(letter) == true){
+                    //Comprobamos si tiene puntos para comprar la vocal
+                    if(hasMoney(getPoints1()) == true){
+                        //Compra la vocal
+                        setPoints1(getPoints1() - 50);
+                        if(getRight(quote, letter) == true){
+                            enquote = revealLetterInPanel(quote, enquote, letter);
+                            //Comprobamos si ha ganado
+                            if(complete = quote.compare(enquote) == -1){
+                                turn = 10;
+                                complete = -1;
+                            }
+                            else{
+                                turn = 1;
+                            }
+                            
+                        }
+                        //Fallo
+                        else{
+                            turn = 2;
+                        }
+                    }
+                    //No tiene puntos para comprar una vocal
+                    else{
+                        cout<<"No puedes comprar vocal"<<endl;
+                        turn = 1;
+                    }
+                }
+                //Ha elegido consonante
+                else{
+                        if(getRight(quote, letter) == true){
+                            enquote = revealLetterInPanel(quote, enquote, letter);
+                            //TODO: Solo gana 50 una vez y deberia ganar por las veces que acierta?
+                            setPoints1(getPoints1() + 50 );
+                            //Comprobamos si ha ganado
+                            if(complete = quote.compare(enquote) == -1){
+                                turn = 10;
+                                complete = -1;
+                            }
+                            else{
+                                turn = 1;
+                            }  
+                        }
+                        //Fallo
+                        else{
+                            turn = 2;
+                        }
+                    }
+                }
+                    //Acaba el turno del jugador 1
+            }
+        
+            while(turn == 2){
+                cout<<enquote<<endl;
+
+                cout<<"Que desea jugar??"<<endl;
+
+                getline(cin, letter);
+                if(letter == "RESOLVER"){
+                    if(Resolver(letter) == true){
+                        turn = 20;
+                        complete = -1;
+                    }
+                    else{
+                        turn = 10;
+                        complete = -1;
+                    }
+                }
+                else{
+                if(isVowel(letter) == true){
+                    if(hasMoney(getPoints2()) == true){
+                        setPoints2(getPoints2() - 50);
+                        if(getRight(quote, letter)==true){
+                            enquote = revealLetterInPanel(quote, enquote, letter);
+                            if(complete = quote.compare(enquote) == -1){
+                                turn = 20;
+                                complete = -1;
+                            }
+                            else{
+                                turn = 2;
+                            }
+                        }
+                        else{
+                            turn = 1;
+                        }
+                    }
+                    else{
+                        cout<<"No tienes puntos para usar vocal"<<endl;
+                        turn = 2;
+                    }
+                }
+                else{
+                    if(getRight(quote, letter)==true){
+                        setPoints2(getPoints2()+50);
+                        enquote=revealLetterInPanel(quote, enquote, letter);
+                        if(complete = quote.compare(enquote) == -1){
+                            turn = 20;
+                            complete = -1;
+                        }
+                        else{
+                            turn = 2;
+                        }
+                    }
+                    else{
+                        turn = 1;
+                    }
+                }
+            }
+
+
+            }
+        }
+        if(turn == 10){
+            cout<<"Ha ganado "<<getName1()<<endl;
+        }
+        if(turn == 20){
+            cout << "Ha ganado "<<getName2()<<endl;
+        }
+
+        finishGame(playerOne, playerTwo);
+
+    }
+
+    void finishGame(player playerOne, player playerTwo){
+        playerOne.setStatus=0;
+        playerTwo.setStatus=0;
+        //TODO: Hay que hacer mas cosas?
+    }
 };
 
-// TODO: Posible pasar de char a string
+//PARA VALENTIN: Una funcion que retorne un char o que reciba un char es un movidote 
+//PARA VALENTIN: Redundancia en los puntos de los jugadores
+//PARA VALENTIN: Hacer salir es facil pero no se como hacer que se desconecten
+//PARA VALENTIN: En teoria el juego esta terminado, a lo mejor hay bugs pero se corrigen ez
+
 // TODO: Funciones de registro, una para user, otra para pass
 void registration(char[MSG_SIZE] texto)
 {
