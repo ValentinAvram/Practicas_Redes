@@ -24,6 +24,7 @@
 using namespace std;
 //TODO: Hacer funciones de "Existe X letra"
 
+int arrayInGame[20];
 string strings[30];
 
 char stringToChar(string texto)
@@ -192,7 +193,7 @@ class game{
     public:
 
     game();
-    game(int sd1, int sd2, int puntos1, int puntos2,player playerOne, player playerTwo,char buffer[350]) 
+    game(int sd1, int sd2, int puntos1, int puntos2,char buffer[350]) 
     {
     this->descriptor1 = sd1;
     this->descriptor2 = sd2;
@@ -246,18 +247,9 @@ class game{
         string quote = getRandomLine();
         //Encriptamos el refran aleatorio
         string enquote = encryptQuote(quote);
-        //En primer lugar cambiamos el status de los jugadores
-        playerOne.setStatus(2);
-        playerTwo.setStatus(2);
         //Pasamos el descriptor de ambos jugadores
-        setDescriptor1(playerOne.getDescriptor());
-        setDescriptor2(playerTwo.getDescriptor());
-        int sd1 = playerOne.getDescriptor();
-        int sd2 = playerTwo.getDescriptor();
-        //Obtenemos el nombre de ambos jugadores
-        //Inicializamos los puntos de ambos jugadores a 0 antes de que comience la partida
-        setPoints1(0);
-        setPoints2(0);
+        int sd1 = descriptor1;
+        int sd2 = descriptor2;
         //Comenzamos la partida
         //La partida comienza con un bucle en el que no termina mientras este completo el panel
         //El sistema de turnos se basa en dos bucles en torno a la variable turn
@@ -427,13 +419,19 @@ class game{
                 send(sd2,&buffer,sizeof(&buffer),0);
         }
 
-        finishGame(playerOne, playerTwo);
+        finishGame(descriptor1, descriptor2);
 
     }
 
     void finishGame(int descriptor1, int descriptor2){
-        playerOne.setStatus(0);
-        playerTwo.setStatus(0);
+        for(int i = 0; i<20; i++){
+            if(arrayInGame[i]==descriptor1){
+                arrayInGame[i]=0;
+            }
+            if(arrayInGame[i]==descriptor2){
+                arrayInGame[i]=0;
+            }
+        }
         //TODO: Hay que hacer mas cosas?
     }
 };
@@ -778,12 +776,19 @@ int main ( )
 
                                 if(strcmp(buffer,"INICAR-PARTIDA\n") == 0)
                                 {   //TODO: Max 20 players. Otro array
-                                        for(i = 0; i < jugadores.size();i++);
-                                        {   //TODO: ir cogiendo sds de la mierda
-                                            newGame.startGame(jugador1,jugador2, buffer);
-                                            newGame.finishGame(jugador1,jugador2);
-                                            i = i+2;
+                                        for(i = 0; i < 20;i++);
+                                        {   
+                                            arrayInGame[i] = arrayClientes[i];
                                         }
+
+                                        for(i = 0; i<20;){
+                                            int p1=arrayInGame[i];
+                                            int p2=arrayInGame[i+1];
+                                            game newGame(p1,p2,0,0,buffer);
+                                            newGame.startGame(p1,p2, buffer);
+                                            newGame.finishGame(p1,p2);
+                                            i = i+2;
+                                            }
                                     //TODO: ..
                                 }
 
@@ -822,7 +827,6 @@ int main ( )
                 }
             }
 		}
-    }
 	close(sd);
 	return 0;
 	
