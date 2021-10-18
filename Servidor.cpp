@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <arpa/inet.h>
-#include <ifstream.h>
+#include <fstream>
 #include <iostream>
 #include <bits/stdc++.h>
 #include <vector>
@@ -33,7 +33,7 @@ char stringToChar(string texto)
 }
 
 //int char_size = sizeof(buffer) / sizeof(char);
-string charToString(char* buffer[350], int char_size)
+string charToString(char buffer[350], int char_size) //TODO:: LUEGO
 {
     int i;
     string texto = "";
