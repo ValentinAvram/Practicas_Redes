@@ -83,9 +83,7 @@ string encryptQuote(string quote){
 
     //Pasamos de char a string
     int size = sizeof(aux) / sizeof(char);
-    for(int j=0; j<size; j++){
-        equote = equote + aux[j];
-    }
+    equote = charToString(aux, size);
 
     return equote;
 }
@@ -188,8 +186,8 @@ class player{
 	private:
 	int descriptor;
     int status; // 0 sin logear, 1 en espera a game, 2 en game
-	char name[MSG_SIZE];
-    char password[MSG_SIZE];
+	string name;
+    string password;
     int points;
 
     public:
@@ -199,7 +197,7 @@ class player{
     this->descriptor = sd;
     this->status = status;
     this->name = nombre;
-    this->pass = contra;
+    this->password = contra;
     this->points = puntos;
     }
 
@@ -214,12 +212,12 @@ class player{
         status=status;
     }
 
-    void setName(char nombre[MSG_SIZE])
+    void setName(string nombre)
     {
         name = nombre;
     }
 
-    void setPassword(char contra[MSG_SIZE])
+    void setPassword(string contra)
     {
         password = contra;
     }
@@ -240,12 +238,12 @@ class player{
         return status;
     }
 
-    char getName()
+    string getName()
     {
         return name;
     }
 
-    char getPass()
+    string getPass()
     {
         return password;
     } 
@@ -286,34 +284,34 @@ class game{ // TOO: class game:player() ??
     {
         descriptor2 = sd2;
     }
-    void setName1(string name1)
+    void setName1(string nombre1)
     {
         name1 = nombre1;
     }
     
-    void setName2(string name2)
+    void setName2(string nombre2)
     {
         name2 = nombre2;
     }
 
-    void setPoints1(int points2)
+    void setPoints1(int puntos1)
     {
         points1 = puntos1;
     }
     
-    void setPoints2(int points2)
+    void setPoints2(int puntos2)
     {
         points2 = puntos2;
     }
     //Getters
     int getDescriptor1()
     {
-        return Descriptor1;
+        return descriptor1;
     }
     
     int getDescriptor2()
     {
-        return Descriptor2;
+        return descriptor2;
     }
 
     string getName1()
