@@ -136,7 +136,7 @@ bool Resolver(string quote){
     getline(cin, resolve);
     //Espera dramatica
     sleep(15);
-    cout<<"Y la respuesta es..."
+    cout<<"Y la respuesta es...";
     sleep(10);
     if (quote.compare(resolve) == -1){
         cout<<"CORRECTA!!!"<<endl;
