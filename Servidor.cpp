@@ -36,10 +36,10 @@ char stringToChar(string texto)
 //int char_size = sizeof(buffer) / sizeof(char);
 string charToString(char buffer[350], int char_size) //TODO:: LUEGO
 {
-    int i;
+    int g;
     string texto = "";
-    for (i = 0; i < char_size; i++) {
-        texto = texto + buffer[i];
+    for (g = 0; g < char_size; g++) {
+        texto = texto + buffer[g];
     }
     return texto;
 }
@@ -47,20 +47,20 @@ string charToString(char buffer[350], int char_size) //TODO:: LUEGO
 // create custom split() function  
 void split (string str, char seperator)  
 {  
-    int currIndex = 0, i = 0;  
+    int currIndex = 0, g = 0;  
     int startIndex = 0, endIndex = 0;  
-    while (i <= str.length())  
+    while (g <= str.length())  
     {  
-        if (str[i] == seperator || i == str.length())  
+        if (str[g] == seperator || g == str.length())  
         {  
-            endIndex = i;  
+            endIndex = g;  
             string subStr = "";  
             subStr.append(str, startIndex, endIndex - startIndex);  
             strings[currIndex] = subStr;  
             currIndex += 1;  
             startIndex = endIndex + 1;  
         }  
-        i++;  
+        g++;  
         }     
 } 
 
@@ -73,12 +73,12 @@ string encryptQuote(string quote){
     strcpy(aux, quote.c_str());
 
 
-    for(int i = 0; i<quote.size(); i++){
-        if(aux[i]== ' '){
-            aux[i] = ' ';
+    for(int g = 0; g<quote.size(); g++){
+        if(aux[g]== ' '){
+            aux[g] = ' ';
         }
         else{
-            aux[i] = '-';
+            aux[g] = '-';
         }
     }
 
@@ -91,9 +91,9 @@ string encryptQuote(string quote){
 
 string revealLetterInPanel(string quote, string equote, string letter){
     int count=0;
-    for(int i = 0; i<quote.size(); i++){
-        if(quote[i]==letter[0]){
-            equote[i] = quote[i];
+    for(int g = 0; g<quote.size(); g++){
+        if(quote[g]==letter[0]){
+            equote[g] = quote[g];
             count ++;
         }
     }
@@ -103,8 +103,8 @@ string revealLetterInPanel(string quote, string equote, string letter){
 }
 
 bool getRight(string quote, string letter){
-    for(int i = 0; i<quote.size(); i++){
-        if(quote[i] == letter[0]){
+    for(int g = 0; g<quote.size(); g++){
+        if(quote[g] == letter[0]){
             return true;
         }
     }
@@ -424,12 +424,12 @@ class game{
     }
 
     void finishGame(int descriptor1, int descriptor2){
-        for(int i = 0; i<20; i++){
-            if(arrayInGame[i]==descriptor1){
-                arrayInGame[i]=0;
+        for(int g = 0; g<20; g++){
+            if(arrayInGame[g]==descriptor1){
+                arrayInGame[g]=0;
             }
-            if(arrayInGame[i]==descriptor2){
-                arrayInGame[i]=0;
+            if(arrayInGame[g]==descriptor2){
+                arrayInGame[g]=0;
             }
         }
         //TODO: Hay que hacer mas cosas?
@@ -477,6 +477,7 @@ int main ( )
   	sd = socket (AF_INET, SOCK_STREAM, 0);
 	if (sd == -1)
 	{
+        
 		perror("No se puede abrir el socket cliente\n");
     	exit (1);	
 	}
@@ -492,6 +493,7 @@ int main ( )
     // Asociar socket a puerto
 	if (bind (sd, (struct sockaddr *) &sockname, sizeof (sockname)) == -1)
 	{
+        
 		perror("Error en la operación bind");
 		exit(1);
 	}
@@ -502,9 +504,11 @@ int main ( )
     // Habilitar el socket para que reciba conexiones
 	if(listen(sd,30) == -1) // Max. 30 usuarios en cola
     {
+        
 		perror("Error en la operación de listen");
 		exit(1);
 	}
+
     
 	    // Inicializar los conjuntos fd_set
     	FD_ZERO(&readfds);
@@ -523,7 +527,7 @@ int main ( )
 		while(1){
             
             // Esperamos recibir mensajes de los clientes (nuevas conexiones o mensajes de los clientes ya conectados)
-            
+           
             auxfds = readfds;
 
             // Atender varios clientes a la vez
@@ -532,15 +536,18 @@ int main ( )
             
             if(salida > 0)
             {
+                
                 for(i=0; i<FD_SETSIZE; i++)
                 { 
                     //Buscamos el socket por el que se ha establecido la comunicación
                     if(FD_ISSET(i, &auxfds)) 
-                    {   
+                    {   printf("CERO I == %d\n", i);
+                        printf("PRIMER SD == %d\n", sd);
                         if( i == sd)
-                        { 
+                        { printf("PRIMER I == %d\n", i);
                             if((new_sd = accept(sd, (struct sockaddr *)&from, &from_len)) == -1)
                             {
+                                printf("segundo I == %d\n", i);
                                 perror("Error aceptando peticiones");
                             }
                             else
@@ -551,17 +558,19 @@ int main ( )
                                 // Agrupar instancias de dos en dos, en clase game
 
                                 if(numClientes < MAX_CLIENTS)
-                                {
+                                {cout<<"ENTRA A NUEVO CLIENTE";
+                                printf("tercer I == %d\n", i);
                                     arrayClientes[numClientes] = new_sd;
                                     numClientes++;
                                     FD_SET(new_sd,&readfds);
-
+                                    
                                     // NombreClase nombre_objeto();
                                     // Enviar mensaje al nuevo cliente
                                     send(new_sd,buffer,sizeof(buffer),0);
                                     // TODO: Crear instancia jugador recien logeado / registrado
                                     for(j=0; j<(numClientes-1);j++)
                                     {
+                                        
                                         bzero(buffer,sizeof(buffer)); // Deja buffer = "\0"
                                         sprintf(buffer, "Nuevo Cliente conectado: %d\n",new_sd); // TODO: Cambiar el "new_sd" por el nick del usuario recien conectado
                                         send(arrayClientes[j],buffer,sizeof(buffer),0);
@@ -569,16 +578,18 @@ int main ( )
                                 }
                                 else
                                 {
+                                    
                                     bzero(buffer,sizeof(buffer));
                                     strcpy(buffer,"Demasiados clientes conectados\n");
                                     send(new_sd,buffer,sizeof(buffer),0);
                                     close(new_sd);
                                 }
-                                
+                               printf("cuatro I == %d\n", i); 
                             }
                         }
                         else if (i == 0)
-                        {
+                        {  cout<<"ENTRA A ELSE DE ESCRITURA SERVER\n";
+                            printf("quinto I == %d\n", i);
                             //Se ha introducido información de teclado del servidor
                             bzero(buffer, sizeof(buffer));
                             fgets(buffer, sizeof(buffer),stdin);
@@ -597,14 +608,17 @@ int main ( )
                                 close(sd);
                                 exit(-1); 
                             }
+                            printf("sesto I == %d\n", i);
                             //TODO: IMPLEMENTAR MENSAJES A MANDAR A LOS CLIENTES. INSTRUCCIONES DE USO SI ES, otra cosa no hay                        
                         } 
                         else
-                        {
+                        {   printf("sestimo I == %d\n", i);
+                            cout<<"ENTRA A ELSE DE LECUTRA";
                             bzero(buffer,sizeof(buffer));
-
+                             
                             // Recepcion de mensaje siguiente elemento del set (primer for)
                             recibidos = recv(i,buffer,sizeof(buffer),0);
+                            printf("recibidos es %d",recibidos);
                             if(recibidos > 0)
                             {
                                 // TODO: FUNCIONES DE REGISTRO, una para user, otra para pass???
@@ -619,7 +633,7 @@ int main ( )
                                     string pass = "0";
                                     int char_size = sizeof(buffer) / sizeof(char);
                                     if(cadenaComienzaCon(buffer, "REGISTER -u"))
-                                    {   
+                                    {   printf("El sd es %d\n", arrayClientes[numClientes]);
                                         string texto = charToString(buffer, char_size);                                 
                                         login = false;
                                         registrado = true;
@@ -776,18 +790,19 @@ int main ( )
 
                                 if(strcmp(buffer,"INICAR-PARTIDA\n") == 0)
                                 {   //TODO: Max 20 players. Otro array
-                                        for(i = 0; i < 20;i++);
+                                        int p;
+                                        for(p = 0; p < 20;p++);
                                         {   
-                                            arrayInGame[i] = arrayClientes[i];
+                                            arrayInGame[p] = arrayClientes[p];
                                         }
 
-                                        for(i = 0; i<20;){
-                                            int p1=arrayInGame[i];
-                                            int p2=arrayInGame[i+1];
+                                        for(p = 0; p<20;){
+                                            int p1=arrayInGame[p];
+                                            int p2=arrayInGame[p+1];
                                             game newGame(p1,p2,0,0,buffer);
                                             newGame.startGame(p1,p2, buffer);
                                             newGame.finishGame(p1,p2);
-                                            i = i+2;
+                                            p = p+2;
                                             }
                                     //TODO: ..
                                 }
@@ -814,6 +829,7 @@ int main ( )
                                     send(arrayClientes[j],buffer,sizeof(buffer),0);  
                                 }
                             }
+
                             //Si el cliente introdujo ctrl+c
                             if(recibidos == 0)
                             {
@@ -823,8 +839,10 @@ int main ( )
                                 salirCliente(i,&readfds,&numClientes,arrayClientes);
                             }
                         }
+                        printf("valor I == %d\n", i);
                     }
                 }
+                
             }
 		}
 	close(sd);

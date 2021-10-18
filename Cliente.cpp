@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <arpa/inet.h>
+#include <iostream>
 
 using namespace std;
 
@@ -32,7 +33,7 @@ int main (int argc, char * const argv[])
     int fin = 0;
 	
     
-  	sd = socket (AF_INET, SOCK_STREAM, 0);
+  	sd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sd == -1)
 	{
 		perror("No se puede abrir el socket cliente\n");
@@ -50,7 +51,6 @@ int main (int argc, char * const argv[])
 		perror ("Error de conexión");
 		exit(1);
 	}
-    
     //Inicializamos las estructuras
     FD_ZERO(&auxfds);
     FD_ZERO(&readfds);
@@ -63,7 +63,6 @@ int main (int argc, char * const argv[])
 	{
         auxfds = readfds;
         salida = select(sd+1,&auxfds,NULL,NULL,NULL);
-        
         //Recepción de mensajes del servidor
         if(FD_ISSET(sd, &auxfds)){
             
