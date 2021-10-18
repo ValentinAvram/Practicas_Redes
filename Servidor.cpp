@@ -26,6 +26,7 @@ using namespace std;
 
 int arrayInGame[20];
 string strings[30];
+//
 
 char stringToChar(string texto)
 {
