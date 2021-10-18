@@ -778,10 +778,6 @@ int main ( )
 
                                 if(strcmp(buffer,"INICAR-PARTIDA\n") == 0)
                                 {   //TODO: Max 20 players. Otro array
-                                    else
-                                    {
-                                        bzero(buffer,sizeof(buffer));
-
                                         for(i = 0; i < jugadores.size();i++);
                                         {   //TODO: ir cogiendo sds de la mierda
                                             newGame.startGame(jugador1,jugador2, buffer);
