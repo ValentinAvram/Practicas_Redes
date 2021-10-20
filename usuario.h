@@ -32,4 +32,5 @@ class Usuario{
     //...
     inline void setPassword(string Password) { password = Password;} //Es necesario el strncpy??
     inline void setStatus(int Estado) {estado=Estado;}
+
 };

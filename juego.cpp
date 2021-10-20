@@ -1,4 +1,7 @@
+
+
 #include "juego.h"
+#include "usuario.h"
 
 using namespace std;
 

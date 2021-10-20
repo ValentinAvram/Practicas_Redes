@@ -4,9 +4,9 @@ using namespace std;
 
 //TODO: Añadir aqui las funciones de la clase usuario
 //Añadir constructor
-Usuario::Usuario(int descriptor)
+Usuario::Usuario()
 {
-    sd = descriptor;
+    sd = -1;
     estado = 0;
 
     checkNombre = false;
@@ -22,3 +22,4 @@ bool Usuario::checkLogin()
     }
     return false;
 }
+

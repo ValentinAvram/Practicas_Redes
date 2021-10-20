@@ -42,10 +42,14 @@ void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClie
 
 // Control de juego
 int unirJugadores(int sd);
-
 int parejaJuego(int sd);
-
 int unirJugadores(int sd);
+bool userCorrecto(string nombreUser);
+bool passCorrecto(string passUser);
+bool login(int sdUser, string nombre);
+bool unlogUser(int sdUser);
+bool deleteGame(int sdUser);
+Juego getGame(int sdUser);
 
 int main ( )
 {
@@ -152,7 +156,6 @@ int parejaJuego(int sd)
     return 0;
 }
 
-
 int unirJugadores(int sd)
 {
     if (ngames == 0)
@@ -171,7 +174,7 @@ int unirJugadores(int sd)
             games.push_back(game);
             return 1;
         }//TODO: Cambiar esto. Reestructurar array modo profe
-        else if (ngames + 1 < 10)
+        else if (ngames < 10)
         {
             Juego juego;
             juego.newPlayer(sd);
@@ -180,4 +183,98 @@ int unirJugadores(int sd)
         }
     }
     return 0;
+}
+
+bool userCorrecto(string nombreUser)
+{
+    for(int i = 0; i < (int)clientes.size(); i++)
+    {
+        if(strcmp(clientes[i].getNombre(), nombreUser) == 0)
+        {
+            clientes[i].checkNombre = true;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool passCorrecto(string passUser)
+{
+    for(int i = 0; i < (int)clientes.size(); i++)
+    {
+        if(strcmp(clientes[i].getPassword(), passUser) == 0)
+        {
+            clientes[i].checkPass = true;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool login(int sdUser, string nombre)
+{
+    for (int i = 0; i < (int)clientes.size(); i++)
+    {
+        if ((strcmp(clientes[i].getNombre(), nombre) == 0) && (users_[i].getSd() == -1))
+        {
+            clientes[i].setSd(sdUser);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool unlogUser(int sdUser)
+{
+    for (int i = 0; i < (int)clientes.size(); i++)
+    {
+        if (clientes[i].getSd() == sdUser)
+        {
+            clientes[i].setSd(-1);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool deleteGame(int sdUser)
+{//TODO: Cambiada Iterator?
+    for (int i = 0; i < (int)<games.size(); i++)
+    {
+        {
+            if (games[i].getSd1() == sdUser)
+            {
+                games.erase(games[i]);
+                ngames--;
+                return true;
+            }
+            else if (games[i].getSd2() == sdUser)
+            {
+                games.erase(games[i]);
+                ngames--;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+Juego getGame(int sdUser)
+{
+    for (int i = 0; i < (int)games.size(); i++)
+    {
+        if (games[i].getNumP() == 2)
+        {
+            if (games[i].getSd1() == sdUser)
+            {
+                return games[i];
+            }
+            else if (games[i].getSd2() == sdUser)
+            {
+                return games[i];
+            }
+        }
+    }
+    Juego voidGame;
+    return voidGame;
 }
