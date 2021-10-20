@@ -1,69 +1,61 @@
-
-
 #include "juego.h"
-#include "usuario.h"
-
+#include <time.h>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <vector>
 using namespace std;
-
-//TODO: Añadir aqui las funciones de la clase juego
-//Añadir constructor
 
 Juego::Juego()
 {
-    puntos1=0;
-    puntos2=0;
-    numP=0;
+    puntos1 = 0;
+    puntos2 = 0;
+    numP = 0;
 }
 
-//TODO: Pasar funciones juego.
-// Posiblemente necesites una variable "string letter en la private". Con sus getters y setters
-void Juego::newPlayer(int sd)
+bool Juego::newPlayer(int sd)
 {
     if (numP == 0){
         setSd1(sd);
         numP++;
+        return true;
     }
     else if(numP == 1){
-        setSd2(sd)
+        setSd2(sd);
         numP++;
+        return true;
     }
     else{
-        exit -1;
+        return false;
     }
 }
 
-string Juego::encryptQuote(string quote)
-{
-    string equote = "";
-    int n= quote.size();
-    char aux[n+1];
+char *Juego::encryptQuote(char *quote)
+{ // TODO: Compruebalo
+    char *equote;
+    int n= sizeof(quote)/sizeof(char);
 
-    //Pasamos de string a char
-    strcpy(aux, quote.c_str());
-
-    for(int g = 0; g<quote.size(); g++)
+    for(int g = 0; g<n; g++)
     {
-        if(aux[g]== ' ')
+        if(equote[g]== ' ')
         {
-            aux[g] = ' ';
+            equote[g] = ' ';
         }
         else
         {
-            aux[g] = '-';
+            equote[g] = '-';
         }
     }
-
-    //Pasamos de char a string
-    int size = sizeof(aux) / sizeof(char);
-    equote = charToString(aux, size);
 
     return equote;
 }
 
-string Juego::revealLetterInPanel(string quote, string equote, string letter)
-{
+char *Juego::revealLetterInPanel(char *quote, char *equote, char *letter) //TODO: A lo mejor falla?¿
+{ 
+
     int count=0;
-    for(int g = 0; g<quote.size(); g++)
+    int n= sizeof(quote)/sizeof(char);
+    for(int g = 0; g<n; g++)
     {
         if(equote[g]==letter[0])
         {
@@ -75,14 +67,14 @@ string Juego::revealLetterInPanel(string quote, string equote, string letter)
             count ++;
         }
     }
-    cout<<"Hay "<<count<<" "<<letter<<endl;
 
     return equote;
 }
 
-bool Juego::getRight(string quote, string letter)
+bool Juego::getRight(char *quote, char *letter)
 {
-    for(int g = 0; g<quote.size(); g++)
+    int n= sizeof(quote)/sizeof(char);
+    for(int g = 0; g<n; g++)
     {
         if(quote[g] == letter[0])
         {
@@ -93,7 +85,7 @@ bool Juego::getRight(string quote, string letter)
     return false;
 }
 
-bool Juego::isVowel(string letra){
+bool Juego::isVowel(char *letra){ //TODO: A lo mejor falla???
     if(letra == "a"){
         return true;
     }
@@ -125,45 +117,47 @@ bool Juego::hasMoney(int points){
     return true;
 }
 
-bool Juego::Resolver(string quote){
-    string resolver;
-    cout<<"Introduzca el refran"<<endl;
-    cout<<"Cuidado, si falla aunque sea por ortografia perdera"<<endl;
-    getline(cin, resolver);
-    //Espera dramatica
-    sleep(10);
-    cout<<"Y la respuesta es...";
-    sleep(10);
-    if (quote == resolver)
+bool Juego::Resolver(char *quote){ // NO FUNCIONA, NECESITA RCV Y SEND
+    char* resolver;
+    //cout<<"Introduzca el refran"<<endl;
+    //cout<<"Cuidado, si falla aunque sea por ortografia perdera"<<endl;
+    //getline(cin, resolver);
+    //cout<<"Y la respuesta es...";
+    strncpy(resolver, quote, 250); //TODO: REVISAR!!!
+    if (quote == resolver)//strcmp
     {
-        cout<<"CORRECTA!!!"<<endl;
+        //cout<<"CORRECTA!!!"<<endl;
         return true;
     }
-    else
-    {
-        cout<<"INCORRECTA"<<endl;
-        return false;
-    }
+    return false;
 }
 
-string Juego::getRandomLine()
+char *Juego::getRandomLine() // NO FUNCIONA, NECESITA RCV Y SEND
 {
-    string line;
-    int random=0;
-    int numOfLines=8;
-    ifstream File("refranes.txt");
-
+    int random = 0;
     srand(time(0));
     random = rand() % 8;
 
-    while(getline(File,line))
+    FILE *fichero;
+    fichero = fopen("refranes.txt", "r");
+    if(fichero == nullptr)
     {
-        ++numOfLines;
-
-        if(numOfLines == random)
-        {
-            return line;
-        }
+        exit(-1);
     }
-    return line;
+
+    char *linea = nullptr;                               
+    size_t n = 0;                                 
+    vector<string> refranes;
+
+    while ((getline(&linea, &n, fichero)) != -1)
+    {
+        refranes.push_back(linea); 
+    }
+
+    fclose(fichero);
+
+    string quoteStr = refranes[random];
+    quoteStr.pop_back(); 
+    strncpy(quote, quoteStr.c_str(), 350);
+    return quote;
 }
