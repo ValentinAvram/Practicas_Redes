@@ -17,12 +17,15 @@ class Juego{
     int puntos1;
     int puntos2;
 
-    int numP; // Lo necesitamos?
-
-    char quote[MSG_SIZE];
-    char equote[MSG_SIZE]; //Añadido
+    int numP; 
+    //TODO: A lo mejor necesitas "string letter" para ciertas de tus funciones del juego
+    string quote;
+    string equote;
+    string letter; //Añadido
 
     public: //TODO: Añadir Getters y Setters que faltan
+
+    inline int getIdJuego() {return idJuego;}
 
     inline int getSd1() {return sd1;}
     inline int getSd2() {return sd2;}
@@ -32,7 +35,11 @@ class Juego{
 
     inline int getNumP() {return numP;}
 
-    inline char *getQuote() {return quote;}
+    inline string getQuote() {return quote;}
+    inline string getEQuote() {return equote;}
+    inline string getLetter() {return letter;}
+
+    inline void setIdJuego(int IDJuego) {idJuego = IDJuego;}
 
     inline void setSd1(int Sd1) {sd1=Sd1;}
     inline void setSd2(int Sd2) {sd2=Sd2;}
@@ -42,14 +49,15 @@ class Juego{
 
     inline void setNumP(int NumP) {numP=NumP;}
     //...
-    inline void setQuote(char *Quote) {strncpy(quote, Quote, MSG_SIZE);}
-    
+    inline void setQuote(string Quote) {quote = Quote;}
+    inline void setLetter(string Letter) {letter = Letter;}
+
     bool newPlayer(int sd);
     string encryptQuote(string quote);
     string revealLetterInPanel(string quote, string equote, string letter);
     bool getRight(string quote, string letter);
     bool isVowel(string letra);
     bool hasMoney(int points);
-    bool Resolver(char* quote);
+    bool Resolver(string quote);
     string getRandomLine();
 };

@@ -12,21 +12,20 @@ Juego::Juego()
     numP=0;
 }
 
-//TODO: Pasar funciones juego
-bool Juego::newPlayer(int sd)
+//TODO: Pasar funciones juego.
+// Posiblemente necesites una variable "string letter en la private". Con sus getters y setters
+void Juego::newPlayer(int sd)
 {
     if (numP == 0){
         setSd1(sd);
         numP++;
-        return true;
     }
     else if(numP == 1){
         setSd2(sd)
         numP++;
-        return true;
     }
     else{
-        return false;
+        exit -1;
     }
 }
 
@@ -123,17 +122,16 @@ bool Juego::hasMoney(int points){
     return true;
 }
 
-bool Juego::Resolver(char* quote){
-    char resolver[MSG_SIZE];
+bool Juego::Resolver(string quote){
+    string resolver;
     cout<<"Introduzca el refran"<<endl;
     cout<<"Cuidado, si falla aunque sea por ortografia perdera"<<endl;
-    getline(cin, resolve);
+    getline(cin, resolver);
     //Espera dramatica
-    sleep(1);
+    sleep(10);
     cout<<"Y la respuesta es...";
     sleep(10);
-    int compare = strcmp(&quote, &resolver);
-    if (compare == 0)
+    if (quote == resolver)
     {
         cout<<"CORRECTA!!!"<<endl;
         return true;

@@ -157,15 +157,15 @@ int unirJugadores(int sd)
 {
     if (ngames == 0)
     {
-        Ruleta ruleta;
-        ruleta.newPlayer(sd);
-        nuevoGame(ruleta);
+        Juego juego;
+        juego.newPlayer(sd);
+        nuevoGame(juego);
         return 1;
     }
     else if (ngames > 1 &&  ngames < 10)
     {
-        Ruleta ruleta = games[ngames - 1];
-        if (ruleta.newPlayer(sd))
+        Juego juego = games[ngames - 1];
+        if (juego.newPlayer(sd))
         {
             games.pop_back();
             games.push_back(game);
@@ -173,9 +173,9 @@ int unirJugadores(int sd)
         }//TODO: Cambiar esto. Reestructurar array modo profe
         else if (ngames + 1 < 10)
         {
-            Ruleta ruleta;
-            ruleta.newPlayer(sd);
-            nuevoGame(ruleta);
+            Juego juego;
+            juego.newPlayer(sd);
+            nuevoGame(jeugo);
             return 1;
         }
     }
