@@ -54,10 +54,10 @@ class Juego{
     inline void setLetter(char *Letter) {strncpy(letter, Letter, 250);}
 
     bool newPlayer(int sd);
-    char *encryptQuote(char * quote);
+    char* encryptQuote(char * quote);
     char *revealLetterInPanel(char * quote, char * equote, char *letter);
     bool getRight(char *quote, char *letter);
-    bool isVowel(char *letra);
+    bool isVowel(char *letter);
     bool hasMoney(int points);
     bool Resolver(char *quote);
     char *getRandomLine();

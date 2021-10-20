@@ -4,7 +4,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 #include <signal.h>
 #include <unistd.h>
 #include <time.h>
@@ -56,17 +56,45 @@ int main ( )
     system("clear");
     cout<<"Main.exe\n";
     // Aqui comprobar lentamente las funciones de clase serv
-    
+    /* Todo esto son ejemplos de funciones y todas funcionan correctamente :)
     Juego juego1;
-    
-    cout << "La frase es " << juego1.getRandomLine()<<endl;
-    //printf("La frase encriptada es = %s \n", juego1.encryptQuote(frase));
-    cout << "La frase encripata es"<< juego1.encryptQuote(juego1.getRandomLine())<<endl;
-    /*char *revealLetterInPanel(char * quote, char * equote, char *letter);
-    bool getRight(char *quote, char *letter);
-    bool isVowel(char *letra);
-    bool hasMoney(int points);
-    bool Resolver(char *quote);*/
+    char *frase=juego1.getRandomLine();
+    cout << "La frase es " << frase<<endl;
+    char* efrase=juego1.encryptQuote(frase);
+    cout << "La frase encriptada es "<<efrase<<endl;
+    string letterstr = "A";
+    char *letra= strdup(letterstr.c_str());
+    efrase = juego1.revealLetterInPanel(frase, efrase, letra);
+    cout <<"Revelar A: " << efrase << endl;
+    string letratrue = "A";
+    string letrafalse= "W";
+    char *lettertrue = strdup(letratrue.c_str());
+    char *letterfalse = strdup(letrafalse.c_str());
+    if(juego1.getRight(frase, lettertrue) == true){
+       cout<<"Hay A"<<endl;
+    }
+    if(juego1.getRight(frase, letterfalse) == false){
+       cout<<"No hay W"<<endl;
+    }
+   if(juego1.isVowel(lettertrue)==true){
+       cout<<lettertrue<<" es vocal"<<endl;
+   }
+   if(juego1.isVowel(letterfalse)==false){
+       cout<<letterfalse<<" no es vocal"<<endl;
+   }
+   if(juego1.hasMoney(49)==false){
+       cout<<"No hay dinero"<<endl;
+   }
+   if(juego1.hasMoney(51)==true){
+       cout<<"Hay billetes"<<endl;
+   }
+    if(juego1.Resolver(frase)==true){
+        cout<<"Funciona esto cuando aciertas"<<endl;
+    }
+    if(juego1.Resolver(frase)==false){
+        cout<<"Funciona esto cuando fallas"<<endl;
+    }
+    */
     return 0;
 }
 

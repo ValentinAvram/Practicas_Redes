@@ -30,22 +30,27 @@ bool Juego::newPlayer(int sd)
     }
 }
 
-char *Juego::encryptQuote(char *quote)
+char * Juego::encryptQuote(char *quote)
 { // TODO: Compruebalo
-    char *equote;
-    int n= sizeof(quote)/sizeof(char);
+    char* equote;
+    string efrase(quote);
+    int n= strlen(quote);
 
     for(int g = 0; g<n; g++)
     {
-        if(equote[g]== ' ')
+        
+        if(efrase[g]== ' ')
         {
-            equote[g] = ' ';
+            efrase[g] = ' ';
         }
         else
         {
-            equote[g] = '-';
+            efrase[g] = '-';
         }
     }
+    efrase[n+1]='\0';
+
+    equote= strdup(efrase.c_str());
 
     return equote;
 }
@@ -54,26 +59,36 @@ char *Juego::revealLetterInPanel(char *quote, char *equote, char *letter) //TODO
 { 
 
     int count=0;
-    int n= sizeof(quote)/sizeof(char);
+    int n= strlen(quote);
+    string quotestr(quote);
+    string equotestr(equote);
+    string letterstr(letter);
     for(int g = 0; g<n; g++)
     {
-        if(equote[g]==letter[0])
+        if(equotestr[g]==letterstr[0])
         {
-            letter[0]=42;
+            letterstr[0]=42;
         }
-        if(quote[g]==letter[0])
+    }
+    for(int h=0; h<n+1; h++)
+    {
+    
+        if(quotestr[h]==letterstr[0])
         {
-            equote[g] = quote[g];
+            equotestr[h] = quotestr[h];
             count ++;
         }
     }
+    equote= strdup(equotestr.c_str());
 
     return equote;
 }
 
 bool Juego::getRight(char *quote, char *letter)
 {
-    int n= sizeof(quote)/sizeof(char);
+    string quotestr(quote);
+    string letterstr(letter);
+    int n= strlen(quote);
     for(int g = 0; g<n; g++)
     {
         if(quote[g] == letter[0])
@@ -85,24 +100,26 @@ bool Juego::getRight(char *quote, char *letter)
     return false;
 }
 
-bool Juego::isVowel(char *letra){ //TODO: A lo mejor falla???
-    if(letra == "a"){
+bool Juego::isVowel(char *letter){ //TODO: A lo mejor falla???
+    
+    string letra(letter);
+    if(letra == "A"){
         return true;
     }
 
-    if(letra == "e"){
+    if(letra == "E"){
         return true;
     }
 
-    if(letra == "i"){
+    if(letra == "I"){
         return true;
     }
 
-    if(letra == "o"){
+    if(letra == "O"){
         return true;
     }
 
-    if(letra == "u"){
+    if(letra == "U"){
         return true;
     }
 
@@ -118,12 +135,12 @@ bool Juego::hasMoney(int points){
 }
 
 bool Juego::Resolver(char *quote){ // NO FUNCIONA, NECESITA RCV Y SEND
-    char* resolver;
-    //cout<<"Introduzca el refran"<<endl;
-    //cout<<"Cuidado, si falla aunque sea por ortografia perdera"<<endl;
-    //getline(cin, resolver);
-    //cout<<"Y la respuesta es...";
-    strncpy(resolver, quote, 250); //TODO: REVISAR!!!
+    string quotestr(quote);
+    string resolver;
+    cout<<"Introduzca el refran"<<endl;
+    cout<<"Cuidado, si falla aunque sea por ortografia perdera"<<endl;
+    getline(cin, resolver);
+    cout<<"Y la respuesta es...";
     if (quote == resolver)//strcmp
     {
         //cout<<"CORRECTA!!!"<<endl;
