@@ -24,12 +24,6 @@ class Juego{
 
     public: //TODO: Añadir Getters y Setters que faltan
 
-    Ruleta(){
-        puntos1=0;
-        puntos2=0;
-        numP=0;
-    }
-
     inline int getSd1() {return sd1;}
     inline int getSd2() {return sd2;}
     
@@ -49,20 +43,13 @@ class Juego{
     inline void setNumP(int NumP) {numP=NumP;}
     //...
     inline void setQuote(char *Quote) {strncpy(quote, Quote, MSG_SIZE);}
-
-    bool newPlayer(int sd){
-        if (numP == 0){
-            setSd1(sd);
-            numP++;
-            return true;
-        }
-        else if(numP == 1){
-            setSd2(sd)
-            numP++;
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
+    
+    bool newPlayer(int sd);
+    string encryptQuote(string quote);
+    string revealLetterInPanel(string quote, string equote, string letter);
+    bool getRight(string quote, string letter);
+    bool isVowel(string letra);
+    bool hasMoney(int points);
+    bool Resolver(char* quote);
+    string getRandomLine();
 };

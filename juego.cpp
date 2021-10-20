@@ -5,229 +5,164 @@ using namespace std;
 //TODO: Añadir aqui las funciones de la clase juego
 //Añadir constructor
 
+Juego::Juego()
+{
+    puntos1=0;
+    puntos2=0;
+    numP=0;
+}
 
-FillMissingLettersGame::FillMissingLettersGame(int id, int player1_SocketDescriptor, int player2_SocketDescriptor, int server_SocketDescriptor){
+//TODO: Pasar funciones juego
+bool Juego::newPlayer(int sd)
+{
+    if (numP == 0){
+        setSd1(sd);
+        numP++;
+        return true;
+    }
+    else if(numP == 1){
+        setSd2(sd)
+        numP++;
+        return true;
+    }
+    else{
+        return false;
+    }
+}
 
-    this->gameId_ = id;
-    this->player1_SocketDescriptor_ = player1_SocketDescriptor;
-    this->player2_SocketDescriptor_ = player2_SocketDescriptor;
+string Juego::encryptQuote(string quote)
+{
+    string equote = "";
+    int n= quote.size();
+    char aux[n+1];
 
-    playerTurn_ = this->player1_SocketDescriptor_;
+    //Pasamos de string a char
+    strcpy(aux, quote.c_str());
 
-    this->server_SocketDescriptor_ = server_SocketDescriptor;
-
-    send(player1_SocketDescriptor_, "\n LA PARTIDA VA A COMENZAR", BUFFER_SIZE, 0);
-    send(player2_SocketDescriptor_, "\n LA PARTIDA VA A COMENZAR", BUFFER_SIZE, 0);
-
-    send(player1_SocketDescriptor_, "\n LA FRASE ES ESTA:", BUFFER_SIZE, 0);
-    send(player2_SocketDescriptor_, "\n LA FRASE ES ESTA", BUFFER_SIZE, 0);
-
-    string sentences[] =
+    for(int g = 0; g<quote.size(); g++)
     {
-    "a quien madruga, dios le ayuda",
-    "no hay mal que por bien no venga",
-    "de tal palo, tal astilla",
-    "en casa del herrero cuchara de palo",
-    "el que no corre, vuela",
-    "a lo hecho, pecho",
-    "ojo por ojo, diente por diente",
-    "a rey muerto, rey puesto",
-    "a caballo regalado no le mires el diente",
-    "a buenas horas mangas verdes"
-    };
-
-    srand(time(NULL));
-    int n = rand() % 10;
-    this->sentence_ = sentences[n];
-
-    // set secret sentence
-    for (int i=0; i<sentence_.length(); i++) {
-        if (sentence_[i] == ' '){ gameSentence_+=' '; }
-        else if (sentence_[i] == ','){ gameSentence_+=','; }
-        else{ gameSentence_+='_'; }
-    }
-
-    char* sc = const_cast<char*>(gameSentence_.c_str());
-
-    send(player1_SocketDescriptor_, sc, BUFFER_SIZE, 0);
-    send(player2_SocketDescriptor_, sc, BUFFER_SIZE, 0);
-
-    send(player1_SocketDescriptor_, "\n", BUFFER_SIZE, 0);
-    send(player2_SocketDescriptor_, "\n", BUFFER_SIZE, 0);
-}
-
-//TODO: Añadir aqui las funciones del juego
-void FillMissingLettersGame::startGame(){
-
-    send(player1_SocketDescriptor_, "\n NUEVA PARTIDA", BUFFER_SIZE, 0);
-    send(player2_SocketDescriptor_, "\n NUEVA PARTIDA", BUFFER_SIZE, 0);
-
-    while(true){
-
-        select(FD_SETSIZE, &this->gameFileDescriptorSet_, NULL, NULL, NULL);
-
-        if (FD_ISSET(this->player1_SocketDescriptor_, &this->gameFileDescriptorSet_)) {
-            if ((recv(this->player1_SocketDescriptor_, &gameMessageBuffer_, BUFFER_SIZE, 0) > 0)){
-                
-                this->handleMessage(gameMessageBuffer_);
-            } 
+        if(aux[g]== ' ')
+        {
+            aux[g] = ' ';
         }
-
-    }
-}
-
-
-void FillMissingLettersGame::recreateFileDescriptor(){
-
-    FD_ZERO(&this->gameFileDescriptorSet_);
-
-    FD_SET(this->server_SocketDescriptor_, &this->gameFileDescriptorSet_);
-    FD_SET(this->player1_SocketDescriptor_, &this->gameFileDescriptorSet_);
-}
-
-
-void FillMissingLettersGame::handleMessage(char * message){
-
-    send(player1_SocketDescriptor_, message, BUFFER_SIZE, 0);
-    send(player2_SocketDescriptor_, message, BUFFER_SIZE, 0);
-}
-
-
-void FillMissingLettersGame::checkVocal(string vocal, int playerId){
-
-    if(playerId == playerTurn_){
-
-    if( (playerId==this->player1_SocketDescriptor_ && player1_score>=50) || (playerId==this->player2_SocketDescriptor_ && player2_score>=50)) {
-
-        if( vocal == "a" || vocal == "e" || vocal == "i" || vocal == "o" || vocal == "u"){
-
-            int found = 0;
-
-            for (int i=0; i<sentence_.length(); i++) {
-
-                if (sentence_[i]==vocal[0] && gameSentence_[i]=='_'){ 
-                    found = 1;
-                    gameSentence_[i] = vocal[0];
-                }
-            }
-            if (found == 1){ 
-                if(playerId == this->player1_SocketDescriptor_){ this->player1_score-=50; }
-                else{ this->player2_score-=50; } 
-            
-            } else { 
-
-                send(player1_SocketDescriptor_, "CAMBIO DE TURNO", BUFFER_SIZE, 0);
-                send(player2_SocketDescriptor_, "CAMBIO DE TURNO", BUFFER_SIZE, 0);
-
-                if(playerId == this->player1_SocketDescriptor_){ playerTurn_ = player2_SocketDescriptor_; }
-                else{ playerTurn_ = player2_SocketDescriptor_; }
-            }
-
-            char* sc = const_cast<char*>(gameSentence_.c_str());
-
-            send(player1_SocketDescriptor_, sc, BUFFER_SIZE, 0);
-            send(player2_SocketDescriptor_, sc, BUFFER_SIZE, 0);
-
-            string s1 = std::to_string(player1_score);
-            char const * p1s = s1.c_str();
-            send(player1_SocketDescriptor_, p1s, BUFFER_SIZE, 0);
-
-            string s2 = std::to_string(player2_score);
-            char const * p2s = s2.c_str();
-            send(player2_SocketDescriptor_, p2s, BUFFER_SIZE, 0);
-        }
-
-        if(checkGame() == 1){
-            send(player1_SocketDescriptor_, "PARTIDA TERMINADA", BUFFER_SIZE, 0);
-            send(player2_SocketDescriptor_, "PARTIDA TERMINADA", BUFFER_SIZE, 0);
-        
-        }
-    
-    }
-    }
-}
-
-void FillMissingLettersGame::checkConsonante(string consonante, int playerId){
-
-    if(playerId == playerTurn_){
-
-    if( consonante != "a" && consonante != "e" && consonante != "i" && consonante != "o" && consonante != "u"){
-
-        int found = 0;
-
-        for (int i=0; i<sentence_.length(); i++) {
-            if (sentence_[i]==consonante[0] && gameSentence_[i]=='_'){ 
-                found = 1;
-                gameSentence_[i] = consonante[0];
-                if(playerId == this->player1_SocketDescriptor_){ this->player1_score+=50; }
-                else{ this->player2_score+=50; } 
-            }
-        }
-
-        if(found == 0) { 
-
-            send(player1_SocketDescriptor_, "CAMBIO DE TURNO", BUFFER_SIZE, 0);
-            send(player2_SocketDescriptor_, "CAMBIO DE TURNO", BUFFER_SIZE, 0);
-
-            if(playerId == this->player1_SocketDescriptor_){ playerTurn_ = player2_SocketDescriptor_; }
-            else{ playerTurn_ = player2_SocketDescriptor_; }
-            }
-
-        char* sc = const_cast<char*>(gameSentence_.c_str());
-
-        send(player1_SocketDescriptor_, sc, BUFFER_SIZE, 0);
-        send(player2_SocketDescriptor_, sc, BUFFER_SIZE, 0);
-
-        string s1 = std::to_string(player1_score);
-        char const * p1s = s1.c_str();
-        send(player1_SocketDescriptor_, p1s, BUFFER_SIZE, 0);
-
-        string s2 = std::to_string(player2_score);
-        char const * p2s = s2.c_str();
-        send(player2_SocketDescriptor_, p2s, BUFFER_SIZE, 0);
-    }
-
-    if(checkGame() == 1){
-        send(player1_SocketDescriptor_, "PARTIDA TERMINADA", BUFFER_SIZE, 0);
-        send(player2_SocketDescriptor_, "PARTIDA TERMINADA", BUFFER_SIZE, 0);
-    }
-
-    }
-}
-/*
- * @return 0 if not finished and 1 if finished
- */
-int FillMissingLettersGame::checkGame(){
-
-    for (int i=0; i<sentence_.length(); i++) {
-            if (gameSentence_[i] == '_'){ return 0; }
-    }
-
-    return 1;
-}
-
-/*
- * @return 0 if not finished and 1 if finished
- */
-int FillMissingLettersGame::resolve(string solution, int playerId){
-    
-    if(playerId == playerTurn_){
-        if(solution == this->sentence_){
-
-            if(playerId == this->player1_SocketDescriptor_){ 
-
-                send(player1_SocketDescriptor_, "GANASTE", BUFFER_SIZE, 0);
-                send(player2_SocketDescriptor_, "PERDISTE", BUFFER_SIZE, 0);
-                return 1;
-
-            } else{ 
-
-                send(player2_SocketDescriptor_, "GANASTE", BUFFER_SIZE, 0);
-                send(player1_SocketDescriptor_, "PERDISTE", BUFFER_SIZE, 0);
-                return 1;
-            }
+        else
+        {
+            aux[g] = '-';
         }
     }
 
-    return 0; 
+    //Pasamos de char a string
+    int size = sizeof(aux) / sizeof(char);
+    equote = charToString(aux, size);
+
+    return equote;
+}
+
+string Juego::revealLetterInPanel(string quote, string equote, string letter)
+{
+    int count=0;
+    for(int g = 0; g<quote.size(); g++)
+    {
+        if(equote[g]==letter[0])
+        {
+            letter[0]=42;
+        }
+        if(quote[g]==letter[0])
+        {
+            equote[g] = quote[g];
+            count ++;
+        }
+    }
+    cout<<"Hay "<<count<<" "<<letter<<endl;
+
+    return equote;
+}
+
+bool Juego::getRight(string quote, string letter)
+{
+    for(int g = 0; g<quote.size(); g++)
+    {
+        if(quote[g] == letter[0])
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Juego::isVowel(string letra){
+    if(letra == "a"){
+        return true;
+    }
+
+    if(letra == "e"){
+        return true;
+    }
+
+    if(letra == "i"){
+        return true;
+    }
+
+    if(letra == "o"){
+        return true;
+    }
+
+    if(letra == "u"){
+        return true;
+    }
+
+    return false;
+}
+
+bool Juego::hasMoney(int points){
+    if(points<50)
+    {
+        return false;
+    }
+    return true;
+}
+
+bool Juego::Resolver(char* quote){
+    char resolver[MSG_SIZE];
+    cout<<"Introduzca el refran"<<endl;
+    cout<<"Cuidado, si falla aunque sea por ortografia perdera"<<endl;
+    getline(cin, resolve);
+    //Espera dramatica
+    sleep(1);
+    cout<<"Y la respuesta es...";
+    sleep(10);
+    int compare = strcmp(&quote, &resolver);
+    if (compare == 0)
+    {
+        cout<<"CORRECTA!!!"<<endl;
+        return true;
+    }
+    else
+    {
+        cout<<"INCORRECTA"<<endl;
+        return false;
+    }
+}
+
+string Juego::getRandomLine()
+{
+    string line;
+    int random=0;
+    int numOfLines=8;
+    ifstream File("refranes.txt");
+
+    srand(time(0));
+    random = rand() % 8;
+
+    while(getline(File,line))
+    {
+        ++numOfLines;
+
+        if(numOfLines == random)
+        {
+            return line;
+        }
+    }
+    return line;
 }

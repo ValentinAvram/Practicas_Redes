@@ -26,6 +26,35 @@ vector<User> clientes;
 vector<Ruleta> games;
 int ngames = 0;
 
+//Funciones ficheros
+void escrituraTXT(char buffer[350]);
+void lecturaTXT();
+
+//Funciones cadenas
+char stringToChar(string texto);
+string charToString(char buffer[350], int char_size);
+void split (string str, char seperator);//TODO: A lo mejor borrar split?
+int cadenaComienzaCon(const char *cadena1, const char *cadena2); 
+
+//Funciones server
+void manejador(int signum);
+void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClientes[]);
+
+// Control de juego
+int unirJugadores(int sd);
+
+int parejaJuego(int sd);
+
+int unirJugadores(int sd);
+
+int main ( )
+{
+    system("clear");
+    cout<<"Main.exe\n";
+    // Aqui comprobar lentamente las funciones de clase serv
+    return 0;
+}
+
 char stringToChar(string texto)
 {
     char *buffer = const_cast<char*>(texto.c_str());
@@ -42,7 +71,7 @@ string charToString(char buffer[350], int char_size)
     }
     return texto;
 }
- 
+//TODO: A lo mejor borrar split?
 void split (string str, char seperator)  
 {  
     int currIndex = 0, g = 0;  
@@ -62,137 +91,11 @@ void split (string str, char seperator)
         }     
 } 
 
-string encryptQuote(string quote){
-    string equote = "";
-    int n= quote.size();
-    char aux[n+1];
-
-    //Pasamos de string a char
-    strcpy(aux, quote.c_str());
-
-
-    for(int g = 0; g<quote.size(); g++){
-        if(aux[g]== ' '){
-            aux[g] = ' ';
-        }
-        else{
-            aux[g] = '-';
-        }
-    }
-
-    //Pasamos de char a string
-    int size = sizeof(aux) / sizeof(char);
-    equote = charToString(aux, size);
-
-    return equote;
+int cadenaComienzaCon(const char *cadena1, const char *cadena2){
+    int longitud = strlen(cadena2);
+    if (strncmp(cadena1, cadena2, longitud) == 0) return 1;
+    return 0;
 }
-
-string revealLetterInPanel(string quote, string equote, string letter){
-    int count=0;
-    for(int g = 0; g<quote.size(); g++){
-        if(equote[g]==letter[0]){
-            letter[0]=42;
-        }
-        if(quote[g]==letter[0]){
-            equote[g] = quote[g];
-            count ++;
-        }
-    }
-    cout<<"Hay "<<count<<" "<<letter<<endl;
-
-    return equote;
-}
-
-bool getRight(string quote, string letter){
-    for(int g = 0; g<quote.size(); g++){
-        if(quote[g] == letter[0]){
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool isVowel(string letra){
-    if(letra == "a"){
-        return true;
-    }
-
-    if(letra == "e"){
-        return true;
-    }
-
-    if(letra == "i"){
-        return true;
-    }
-
-    if(letra == "o"){
-        return true;
-    }
-
-    if(letra == "u"){
-        return true;
-    }
-
-    return false;
-}
-
-bool hasMoney(int points){
-    if(points<50){
-        return false;
-    }
-    return true;
-}
-
-bool Resolver(char* quote){
-    char resolver[MSG_SIZE];
-    cout<<"Introduzca el refran"<<endl;
-    cout<<"Cuidado, si falla aunque sea por ortografia perdera"<<endl;
-    getline(cin, resolve);
-    //Espera dramatica
-    sleep(1);
-    cout<<"Y la respuesta es...";
-    sleep(10);
-    int compare = strcmp(&quote, &resolver);
-    if (compare == 0){
-        cout<<"CORRECTA!!!"<<endl;
-        return true;
-    }
-    else{
-        cout<<"INCORRECTA"<<endl;
-        return false;
-    }
-}
-
-string getRandomLine(){
-    string line;
-        int random=0;
-    int numOfLines=8;
-    ifstream File("refranes.txt");
-
-    srand(time(0));
-    random = rand() % 8;
-
-    while(getline(File,line))
-    {
-        ++numOfLines;
-
-        if(numOfLines == random){
-            return line;
-        }
-    }
-    return line;
-}
-
-
-int cadenaComienzaCon(const char *cadena1, const char *cadena2) {
-  int longitud = strlen(cadena2);
-  if (strncmp(cadena1, cadena2, longitud) == 0) return 1;
-  return 0;
-}
-
-
-//TODO: Server Functions
 
 void escrituraTXT(char buffer[350])
 {
@@ -227,14 +130,12 @@ void lecturaTXT()
     fclose(fichero);
 }
 
-// Control de juego
-
-void nuevoGame(Ruleta ruleta)
+void nuevoGame(Juego juego)
 {
     if (ngames < MAX_GAMES)
     {
-        games.push_back(ruleta);
-        ngames_++;
+        games.push_back(juego);
+        ngames++;
     }
 }
 
@@ -278,18 +179,5 @@ int unirJugadores(int sd)
             return 1;
         }
     }
-    return 0;
-}
-
-
-void manejador(int signum);
-void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClientes[]);
-
-
-int main ( )
-{
-    system("clear");
-    cout<<"Main.exe\n";
-    // Aqui comprobar lentamente las funciones de clase serv
     return 0;
 }
