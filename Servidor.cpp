@@ -190,6 +190,8 @@ int main ( )
                                 salirCliente(i,&readfds,&numClientes,arrayClientes);   
                             }
                             //TODO: GAME. VARIOS ELSE IF
+                            //TODO: Ifs de control login pass
+                            // Vector con las funciones de login
                             else if(cadenaComienzaCon(buffer, "USUARIO"))
                             {
                                 string texto(buffer);
