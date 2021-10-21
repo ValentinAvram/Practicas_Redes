@@ -13,6 +13,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <sstream>
 #include "usuario.h" 
 #include "juego.h"
 
@@ -33,7 +34,8 @@ void escrituraTXT(char buffer[350]);
 void lecturaTXT();
 
 //Funciones cadenas
-int cadenaComienzaCon(const char *cadena1, const char *cadena2); 
+bool cadenaComienzaCon(const char *cadena1, const char *cadena2); 
+void split (string mensaje, char seperator);
 
 //Funciones server
 void manejador(int signum);
@@ -49,68 +51,219 @@ bool login(int sdUser, string nombre);
 bool unlogUser(int sdUser);
 bool deleteGame(int sdUser);
 Juego getGame(int sdUser);
-//TODO: Funcion send y recieve
+
+int sd, new_sd;
+int arrayClientes[MAX_CLIENTS];
+int numClientes = 0;
+char buffer[MSG_SIZE];
+socklen_t from_len;
+fd_set readfds, auxfds;
 
 int main ( )
 {
     system("clear");
-    cout<<"Main.exe\n";
-    // Aqui comprobar lentamente las funciones de clase serv
-    /* Todo esto son ejemplos de funciones y todas funcionan correctamente :)
-    Juego juego1;
-    char *frase=juego1.getRandomLine();
-    cout << "La frase es " << frase<<endl;
-    char* efrase=juego1.encryptQuote(frase);
-    cout << "La frase encriptada es "<<efrase<<endl;
-    string letterstr = "A";
-    char *letra= strdup(letterstr.c_str());
-    efrase = juego1.revealLetterInPanel(frase, efrase, letra);
-    cout <<"Revelar A: " << efrase << endl;
-    string letratrue = "A";
-    string letrafalse= "W";
-    char *lettertrue = strdup(letratrue.c_str());
-    char *letterfalse = strdup(letrafalse.c_str());
-    if(juego1.getRight(frase, lettertrue) == true){
-       cout<<"Hay A"<<endl;
-    }
-    if(juego1.getRight(frase, letterfalse) == false){
-       cout<<"No hay W"<<endl;
-    }
-   if(juego1.isVowel(lettertrue)==true){
-       cout<<lettertrue<<" es vocal"<<endl;
-   }
-   if(juego1.isVowel(letterfalse)==false){
-       cout<<letterfalse<<" no es vocal"<<endl;
-   }
-   if(juego1.hasMoney(49)==false){
-       cout<<"No hay dinero"<<endl;
-   }
-   if(juego1.hasMoney(51)==true){
-       cout<<"Hay billetes"<<endl;
-   }
-    if(juego1.Resolver(frase)==true){
-        cout<<"Funciona esto cuando aciertas"<<endl;
-    }
-    if(juego1.Resolver(frase)==false){
-        cout<<"Funciona esto cuando fallas"<<endl;
-    }
-    */
-    return 0;
+	
+	struct sockaddr_in sockname, from;
+   	int salida;
+	int recibidos;
+   	char identificador[MSG_SIZE];
+    int on, ret;
+
+    // Abrir socket
+  	sd = socket (AF_INET, SOCK_STREAM, 0);
+	if (sd == -1)
+	{
+		perror("No se puede abrir el socket cliente\n");
+    	exit (1);	
+	}
+    
+    on=1;
+    ret = setsockopt( sd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+
+	sockname.sin_family = AF_INET;
+	sockname.sin_port = htons(PORT);
+	sockname.sin_addr.s_addr =  INADDR_ANY;
+
+	if (bind (sd, (struct sockaddr *) &sockname, sizeof (sockname)) == -1)
+	{
+		perror("Error en la operación bind");
+		exit(1);
+	}
+	
+	from_len = sizeof (from);
+
+	if(listen(sd,1) == -1)
+    {
+		perror("Error en la operación de listen");
+		exit(1);
+	}
+
+    FD_ZERO(&readfds);
+    FD_ZERO(&auxfds);
+    FD_SET(sd,&readfds);
+    FD_SET(0,&readfds);
+
+    signal(SIGINT,manejador);
+    
+	//El servidor acepta una petición
+	while(1)
+    {
+            
+        //Esperamos recibir mensajes de los clientes (nuevas conexiones o mensajes de los clientes ya conectados)  
+        auxfds = readfds;
+            
+        salida = select(FD_SETSIZE,&auxfds,NULL,NULL,NULL);
+            
+        if(salida > 0)
+        {
+            for(int i=0; i<FD_SETSIZE; i++)
+            {
+                if(FD_ISSET(i, &auxfds)) 
+                { 
+                    if( i == sd)
+                    { 
+                        if((new_sd = accept(sd, (struct sockaddr *)&from, &from_len)) == -1)
+                        {
+                            perror("Error aceptando peticiones");
+                        }
+                        else
+                        {
+                            if(numClientes < MAX_CLIENTS)
+                            {
+                                arrayClientes[numClientes] = new_sd;
+                                numClientes++;
+                                FD_SET(new_sd,&readfds);
+                                
+                                strcpy(buffer, "Bienvenido al juego de la Ruleta de la Suerte\n");
+                                
+                                send(new_sd,buffer,sizeof(buffer),0);
+                                
+                                for(int j=0; j<(numClientes-1);j++)
+                                {
+                                    bzero(buffer,sizeof(buffer));
+                                    sprintf(buffer, "Nuevo Cliente conectado\n");
+                                    send(arrayClientes[j],buffer,sizeof(buffer),0);
+                                }
+                            }
+                            else
+                            {
+                                bzero(buffer,sizeof(buffer));
+                                strcpy(buffer,"Demasiados clientes conectados\n");
+                                send(new_sd,buffer,sizeof(buffer),0);
+                                close(new_sd);
+                            }
+                                
+                        }
+                            
+                            
+                    }
+                    else if (i == 0)
+                    {
+                        
+                        bzero(buffer, sizeof(buffer));
+                        fgets(buffer, sizeof(buffer),stdin);
+                            
+                        //Controlar si se ha introducido "SALIR", cerrando todos los sockets y finalmente saliendo del servidor. (implementar)
+                        if(strcmp(buffer,"SALIR\n") == 0)
+                        {
+                            for (int j = 0; j < numClientes; j++)
+                            {
+                                bzero(buffer, sizeof(buffer));
+                                strcpy(buffer,"Desconexión servidor\n"); 
+                                send(arrayClientes[j],buffer , sizeof(buffer),0);
+                                close(arrayClientes[j]);
+                                FD_CLR(arrayClientes[j],&readfds);
+                            }
+                            close(sd);
+                            exit(-1);        
+                        }
+                    } 
+                    else
+                    {
+                        bzero(buffer,sizeof(buffer));
+                        recibidos = recv(i,buffer,sizeof(buffer),0);
+                            
+                        if(recibidos > 0)
+                        {
+                            if(strcmp(buffer,"SALIR\n") == 0)
+                            {
+                                salirCliente(i,&readfds,&numClientes,arrayClientes);   
+                            }
+                            //TODO: GAME. VARIOS ELSE IF
+                            else if(cadenaComienzaCon(buffer, "USUARIO"))
+                            {
+                                string texto(buffer);
+                                //login = true;
+                                //registrado = false;
+                                bool exists = false;
+                                char *separator = strdup(" ");
+                                texto.erase(0,8);
+                                char *prueba = strdup(texto.c_str());
+                                send(i, prueba, sizeof(prueba), 0);
+                                string user(prueba);
+                                string auxi = "0";
+                                char *linea = nullptr; 
+                                size_t n = 0;
+                                
+                                FILE *fichero;
+                                fichero = fopen("users.txt", "r");
+                                if(fichero == nullptr)
+                                {
+                                    exit(-1);
+                                }                                
+
+                                while ((getline(&linea, &n, fichero)) != -1)
+                                {//NO lee bien la linea
+                                    if(strcmp(linea, prueba) == 0)
+                                    {
+                                        cout << &linea;
+                                        exists=true;
+                                    }
+                                }
+
+                                if(exists == false)
+                                {
+                                    bzero(buffer,sizeof(buffer));
+                                    strcpy(buffer,"\n-Err. Usuario incorrecto\n");
+                                    send(i, buffer, sizeof(buffer), 0);     
+                                }
+                                bzero(buffer,sizeof(buffer));
+                            }
+
+                            else
+                            {   bzero(buffer, sizeof(buffer));
+                                strcpy(buffer, "-Err. Opción NO valida\n");
+                                send(i, buffer, sizeof(buffer), 0);
+                            }  
+                        }
+
+                        //Si el cliente introdujo ctrl+c
+                        if(recibidos== 0)
+                        {
+                            printf("El socket %d, ha introducido ctrl+c\n", i);
+                            salirCliente(i,&readfds,&numClientes,arrayClientes);
+                        }
+                    }
+                }
+            }
+        }
+	}
+	close(sd);
+	return 0;
 }
 
 
-int cadenaComienzaCon(const char *cadena1, const char *cadena2){
+bool cadenaComienzaCon(const char *cadena1, const char *cadena2){
     int longitud = strlen(cadena2);
-    if (strncmp(cadena1, cadena2, longitud) == 0) return 1;
-    return 0;
+    if (strncmp(cadena1, cadena2, longitud) == 0) return true;
+    return false;
 }
 
 void escrituraTXT(char buffer[350]) //TODO:
 {
-    FILE* fichero;
-    fichero = fopen("users.txt", "w");
-    fputs(buffer, fichero); //TODO: Añadir \n al buffer en el main
-    fclose(fichero);
+    ofstream fichero("usuarios.txt"); 
+    fichero<<buffer<<endl;
+    fichero.close();
 }
 
 void lecturaTXT()
@@ -262,7 +415,6 @@ bool deleteGame(int sdUser)
     }
     return false;
 }
-
 //TODO: A lo mejor borrar
 Juego getGame(int sdUser)
 {
@@ -284,3 +436,66 @@ Juego getGame(int sdUser)
     return voidGame;
 }
 
+void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClientes[])
+{
+  
+    char buffer[250];
+    int j;
+    
+    close(socket);
+    FD_CLR(socket,readfds);
+    
+    //Re-estructurar el array de clientes
+    for (j = 0; j < (*numClientes) - 1; j++)
+        if (arrayClientes[j] == socket)
+            break;
+    for (; j < (*numClientes) - 1; j++)
+        (arrayClientes[j] = arrayClientes[j+1]);
+    
+    (*numClientes)--;
+    
+    bzero(buffer,sizeof(buffer));
+    sprintf(buffer,"Desconexión del cliente: %d\n",socket);
+    
+    for(j=0; j<(*numClientes); j++)
+        if(arrayClientes[j] != socket)
+            send(arrayClientes[j],buffer,sizeof(buffer),0);
+
+
+}
+
+void manejador (int signum){
+    char buffer[350];
+    printf("\nSe ha recibido la señal sigint\n");
+    signal(SIGINT,manejador);
+    for (int j = 0; j < numClientes; j++)
+    {
+        bzero(buffer, sizeof(buffer));
+        strcpy(buffer, "–Err. Cierre del servidor!\n");
+        send(arrayClientes[j], buffer, sizeof(buffer), 0);
+        close(arrayClientes[j]);
+        FD_CLR(arrayClientes[j], &readfds);
+    }
+    close(sd);
+    exit(-1);
+}
+
+void split (string str, char seperator)  
+{  
+    char *salida;
+    int currIndex = 0, g = 0;  
+    int startIndex = 0, endIndex = 0;  
+    while (g <= str.length())  
+    {  
+        if (str[g] == seperator || g == str.length())  
+        {  
+            endIndex = g;  
+            string subStr = "";  
+            subStr.append(str, startIndex, endIndex - startIndex);  
+            strings[currIndex] = subStr;  
+            currIndex += 1;  
+            startIndex = endIndex + 1;  
+        }  
+        g++;  
+    }  
+}
