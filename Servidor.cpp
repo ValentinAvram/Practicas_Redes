@@ -214,11 +214,50 @@ int main ( )
                                     exit(-1);
                                 }                                
 
-                                while ((getline(&linea, &n, fichero)) != -1)
+                                while ((getline(linea, fichero)) != -1)
                                 {//NO lee bien la linea
                                     if(strcmp(linea, prueba) == 0)
                                     {
-                                        cout << &linea;
+                                        cout << linea;
+                                        exists=true;
+                                    }
+                                }
+
+                                if(exists == false)
+                                {
+                                    bzero(buffer,sizeof(buffer));
+                                    strcpy(buffer,"\n-Err. Usuario incorrecto\n");
+                                    send(i, buffer, sizeof(buffer), 0);     
+                                }
+                                bzero(buffer,sizeof(buffer));
+                            }
+
+                            else if(cadenaComienzaCon(buffer, "PASSWORD"))
+                            {
+                                string texto(buffer);
+                                //login = true;
+                                //registrado = false;
+                                bool exists = false;
+                                char *separator = strdup(" ");
+                                texto.erase(0,9);
+                                char *prueba = strdup(texto.c_str());
+                                send(i, prueba, sizeof(prueba), 0);
+                                string user(prueba);
+                                char *linea = nullptr; 
+                                size_t n = 0;
+                                
+                                FILE *fichero;
+                                fichero = fopen("users.txt", "r");
+                                if(fichero == nullptr)
+                                {
+                                    exit(-1);
+                                }                                
+
+                                while ((getline(linea,fichero)) != -1)
+                                {//NO lee bien la linea
+                                    if(strcmp(linea, prueba) == 0)
+                                    {
+                                        cout << linea;
                                         exists=true;
                                     }
                                 }
