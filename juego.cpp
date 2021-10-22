@@ -178,3 +178,104 @@ char *Juego::getRandomLine() // NO FUNCIONA, NECESITA RCV Y SEND
     strncpy(quote, quoteStr.c_str(), 350);
     return quote;
 }
+
+void Juego::game(char* quote,int Puntos1, int Puntos2, int Sd1, int Sd2){
+    //Inicializar puntos y sds
+    char *equote = encryptQuote(quote);
+    int turn=0;
+    char* letter;
+    while(isComplete(quote, equote)==false){
+        while(turn == 0){
+            turn = 1;
+            //TODO: Pedir por pantalla que introduzca una letra al sd1
+            //TODO: Leer por pantalla la letra del sd1
+            string letterstr(letter);
+            if(letterstr=="RESOLVER"){
+                if(Resolver(quote)==true){
+                    //TODO: Mostrar por pantalla que ha ganado el jugador 1
+                }
+                else{
+                    //TODO: Mostrar por pantalla que ha ganado el jugador 2
+                }
+            }
+            else{
+                if(isVowel(letter)==true){
+                    if(hasMoney(Puntos1)==true){
+                        setPuntos1(getPuntos1()-50);
+                        if(getRight(quote, letter)==true){
+                            turn = 0;
+                            equote=(revealLetterInPanel(quote,equote,letter));
+                        }
+                        else{
+                            //TODO:Mostrar por pantalla que ha fallado
+                        }
+                    }
+                    else{
+                        //TODO: Mostrar por pantalla que no tiene dinero para comprar vocal, repite turno
+                        letter[0]=42;
+                        turn=0;
+                    }
+                }
+                else{
+                    if(getRight(quote,letter)==true){
+                        turn=0;
+                        setPuntos1(getPuntos1()+50);
+                        equote=revealLetterInPanel(quote,equote,letter);
+                    }
+                }
+            }
+        }
+        while(turn==1){
+            turn = 0;
+            //TODO: Pedir por pantalla que introduzca una letra al sd2
+            //TODO: Leer por pantalla la letra del sd2
+            string letterstr(letter);
+               if(letterstr=="RESOLVER"){
+                   if(Resolver(quote)==true){
+                       //TODO: Mostrar por pantalla que ha ganado el jugador 2
+                   }
+                   else{
+                       //TODO: Mostrar por pantalla que ha ganado el jugador 1
+                   }
+
+               }
+               else{
+                if(isVowel(letter)==true){
+                    if(hasMoney(Puntos2)==true){
+                        setPuntos2(getPuntos2()-50);
+                        if(getRight(quote, letter)==true){
+                            turn=1;
+                            equote=(revealLetterInPanel(quote,equote,letter));
+                        }
+                        else{
+                            //TODO:Mostrar por pantalla que ha fallado
+                        }
+
+                    }
+                    else{
+                        //TODO: Mostrar por pantalla que no tiene dinero para comprar vocal, repite turno
+                        letter[0]=42;
+                        turn = 1;
+                    }
+
+                }
+                else{
+                    if(getRight(quote,letter)==true){
+                        turn=1;
+                        setPuntos2(getPuntos2()+50);
+                        equote=revealLetterInPanel(quote,equote,letter);
+                    }
+                }
+               }
+        }
+    }
+}
+bool Juego::isComplete(char*quote, char* equote){
+    string quotestr(quote);
+    string equotestr(equote);
+
+    if(quotestr==equotestr){
+        return true;
+    }
+    return false;
+}

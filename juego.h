@@ -61,6 +61,8 @@ class Juego{
     bool hasMoney(int points);
     bool Resolver(char *quote);
     char *getRandomLine();
+    void game(char* quote, int Puntos1, int Puntos2, int Sd1, int Sd2);
+    bool isComplete(char* quote, char* equote);
 };
 
 #endif

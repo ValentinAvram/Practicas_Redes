@@ -214,7 +214,7 @@ int main ( )
                                     exit(-1);
                                 }                                
 
-                                while ((getline(linea, fichero)) != -1)
+                                while ((getline(&linea, &n, fichero)) != -1)
                                 {//NO lee bien la linea
                                     if(strcmp(linea, prueba) == 0)
                                     {
@@ -253,7 +253,7 @@ int main ( )
                                     exit(-1);
                                 }                                
 
-                                while ((getline(linea,fichero)) != -1)
+                                while ((getline(&linea,&n,fichero)) != -1)
                                 {//NO lee bien la linea
                                     if(strcmp(linea, prueba) == 0)
                                     {
