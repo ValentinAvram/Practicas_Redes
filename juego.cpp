@@ -264,7 +264,7 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int sd1, int sd2)
         while(turn==1)
         {
             turn = 0;
-            int recibidos1 = recv(sd1,letter,sizeof(letter),0);
+            int recibidos1 = recv(sd2,letter,sizeof(letter),0);
             bzero(buffer,sizeof(buffer));
             strcpy(buffer,"+Ok. Introduzca la letra que desea despejar, o bien elija RESOLVER\n");
             send(sd2,buffer,sizeof(buffer),0);

@@ -191,27 +191,75 @@ int main ( )
                         {
                             if(cadenaComienzaCon(buffer, "REGISTER"))
                             {   
-                                /*if (nombreCorrecto(name))
+                                string entrada(buffer);
+                                entrada.erase(0, 11);
+
+                                bool nuevo = true;
+
+                                char *aux;
+                                char *name;
+                                char *password;
+                                char *flag;
+                                aux = strtok(buffer, " ");
+                                aux = strtok(NULL, " ");
+                                aux = strtok(NULL, " ");
+                                name = aux;
+                                aux = strtok(NULL, " ");
+                                flag = aux;
+                                aux = strtok(NULL, "\n");
+                                password = aux;
+
+                                string strname(name);
+                                string strpass(password);
+
+                                strname += "|";
+                                strname += strpass;
+                                char *charEntrada = strdup(strname.c_str());
+                                cout << charEntrada << endl;
+                                FILE *fichero;
+                                fichero = fopen("users.txt", "r+");
+                                if(fichero == nullptr)
                                 {
-                                strcpy(buffer, "–Err. Usuario ya registrado\n");
-                                send(i, buffer, sizeof(buffer), 0);
+                                    exit(-1);
+                                }                                
+
+                                char *linea = nullptr; 
+                                size_t n = 0;
+
+                                while ((getline(&linea,&n,fichero)) != -1)
+                                {
+                                    linea = strtok(linea, "|");
+                                    cout <<linea<< " == "<<name<<endl;
+                                    if(strcmp(linea, name) == 0)
+                                    {
+                                        strcpy(buffer, "–ERR. Usuario ya registrado!\n");
+                                        send(i, buffer, sizeof(buffer), 0);
+                                        nuevo = false;
+                                        //salirCliente(i,&readfds,&numClientes,arrayClientes);  
+                                        //close(i);
+                                    }
                                 }
-                                else
+                                
+                                if(nuevo == true)
                                 {
-                                usuario.setNombre(name);
-                                usuario.setPassword(password);
-                                clientes.push_back(usuario);
-                                strcpy(buffer, "+Ok. Usuario registrado\n");
-                                send(i, buffer, sizeof(buffer), 0);
-                                }*/
+                                    strcpy(buffer, "+Ok. Usuario registrado con exito!\n");
+                                    send(i, buffer, sizeof(buffer), 0);
+                                    Usuario usuario;
+                                    usuario.setNombre(name);
+                                    usuario.setSd(i);
+                                    usuario.setLoged(true);
+                                    usuario.setPassword(password);
+                                    clientes.push_back(usuario);
+
+                                    fputs( charEntrada, fichero );
+ 	                                fclose ( fichero );
+                                }
                             }
 
                             else if(strcmp(buffer,"SALIR\n") == 0)
                             {
                                 salirCliente(i,&readfds,&numClientes,arrayClientes);   
                             }
-
-
 
                             else if (cadenaComienzaCon(buffer, "USUARIO"))
                             {
@@ -309,6 +357,7 @@ int main ( )
                                                                     send(i, buffer, sizeof(buffer), 0);
                                                                 }
                                                             } 
+                                                            fclose ( fichero2 );
                                                         }
                                                     }
                                                     else if (cadenaComienzaCon(buffer, "PASSWORD\n") == false)
@@ -322,6 +371,7 @@ int main ( )
                                                     send(i, buffer, sizeof(buffer), 0);       
                                                     }
                                                 }
+                                            fclose ( fichero );
                                         }   
                                     }
                                 }
