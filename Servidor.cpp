@@ -284,10 +284,22 @@ int main ( )
                                                                 split(linea, sep);  
                                                                 string user = strings[0];
                                                                 string lineastr(linea2);
-
+                                                                bool eq=true;
                                                                 lineastr.erase(0,user.size()+1);
-
-                                                                if(strcmp(linea, aux) == 0)
+                                                                lineastr.erase(lineastr.size()-2,lineastr.size());
+                                                                linea=strdup(lineastr.c_str());
+                                                                cout<<linea<<endl;
+                                                                cout<<aux<<endl;
+                                                                string auxstr(aux);
+                                                                cout<<"Tamano de lineastr "<<lineastr.size()<<endl;
+                                                                cout<<"Tamano de auxstr "<<auxstr.size()<<endl;
+                                                                for(int count=0; count<sizeof(aux);count++){
+                                                                    if(linea[count]!=aux[count]){
+                                                                        eq=false;
+                                                                    }
+                                                                }
+                                                                cout<<strcmp(linea,aux)<<endl;
+                                                                if(eq == true)
                                                                 {
                                                                     char *auxPass = strdup(lineastr.c_str());
                                                                     usuario.setPassword(auxPass);
@@ -304,13 +316,12 @@ int main ( )
                                                         strcpy(buffer, "-Err. Introduzca su contraseña\n");
                                                         send(i, buffer, sizeof(buffer), 0);
                                                     }
+                                                    if(usuario.getLoged() == false)
+                                                    {
+                                                    strcpy(buffer, "-Err. Inicio de sesión incorrecto.\n");
+                                                    send(i, buffer, sizeof(buffer), 0);       
+                                                    }
                                                 }
-                                            if(usuario.getLoged() == false)
-                                            {
-                                                strcpy(buffer, "-Err. Inicio de sesión incorrecto.\n");
-                                                send(i, buffer, sizeof(buffer), 0);     
-                                                salirCliente(i,&readfds,&numClientes,arrayClientes);  
-                                            }
                                         }   
                                     }
                                 }
