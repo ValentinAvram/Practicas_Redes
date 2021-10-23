@@ -1,10 +1,13 @@
 #include "juego.h"
 #include <time.h>
 #include <fstream>
+#include <sys/socket.h>
 #include <iostream>
 #include <sstream>
 #include <vector>
 using namespace std;
+
+bool cadenaComienza(const char *cadena1, const char *cadena2);
 
 Juego::Juego()
 {
@@ -185,21 +188,19 @@ char *Juego::getRandomLine() // NO FUNCIONA, NECESITA RCV Y SEND
     return quote;
 }
 
-void Juego::game(char* quote,int Puntos1, int Puntos2, int Sd1, int Sd2)
+void Juego::game(char* quote,int Puntos1, int Puntos2, int sd1, int sd2)
 {
     //Inicializar puntos y sds
     char *equote = encryptQuote(quote);
     int turn=0;
     char* letter;
-                
-    int recibido;
-    recibidos = recv(i,letter,sizeof(letter),0);
-
+    char* buffer;
     while(isComplete(quote, equote)==false)
     {
         while(turn == 0)
         {
             turn = 1;
+            int recibidos1 = recv(sd1,letter,sizeof(letter),0);
 
             bzero(buffer,sizeof(buffer));
             strcpy(buffer,"+Ok. Introduzca la letra que desea despejar, o bien elija RESOLVER\n");
@@ -207,9 +208,9 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int Sd1, int Sd2)
 
 
             string letterstr(letter);
-            if(cadenaComienzaCon(letterstr, "RESOLVER"))
+            if(cadenaComienza(letter, "RESOLVER"))
             {
-                if(Resolver(quote)==true)
+                if(Resolver(quote,sd1)==true)
                 {
                     bzero(buffer,sizeof(buffer));
                     strcpy(buffer,"+Ok. Ha ganado el jugador 1!\n");
@@ -263,16 +264,16 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int Sd1, int Sd2)
         while(turn==1)
         {
             turn = 0;
-
+            int recibidos1 = recv(sd1,letter,sizeof(letter),0);
             bzero(buffer,sizeof(buffer));
-            strcpy(buffer,"+Ok. Introduzca la letra que desea despejar\n");
+            strcpy(buffer,"+Ok. Introduzca la letra que desea despejar, o bien elija RESOLVER\n");
             send(sd2,buffer,sizeof(buffer),0);
 
             //TODO: Leer por pantalla la letra del sd2
             string letterstr(letter);
-               if(letterstr=="RESOLVER")
+               if(cadenaComienza(letter, "RESOLVER"))
                {
-                   if(Resolver(quote)==true)
+                   if(Resolver(quote,sd2)==true)
                    {
                         bzero(buffer,sizeof(buffer));
                         strcpy(buffer,"+Ok. Ha ganado el jugador 2!\n");
@@ -337,5 +338,11 @@ bool Juego::isComplete(char*quote, char* equote){
     if(quotestr==equotestr){
         return true;
     }
+    return false;
+}
+
+bool cadenaComienza(const char *cadena1, const char *cadena2){
+    int longitud = strlen(cadena2);
+    if (strncmp(cadena1, cadena2, longitud) == 0) return true;
     return false;
 }

@@ -59,9 +59,9 @@ class Juego{
     bool getRight(char *quote, char *letter);
     bool isVowel(char *letter);
     bool hasMoney(int points);
-    bool Resolver(char *quote);
+    bool Resolver(char *quote, int sd);
     char *getRandomLine();
-    void game(char* quote, int Puntos1, int Puntos2, int Sd1, int Sd2);
+    void game(char* quote, int Puntos1, int Puntos2, int sd1, int sd2);
     bool isComplete(char* quote, char* equote);
 };
 

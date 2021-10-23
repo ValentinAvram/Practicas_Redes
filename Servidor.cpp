@@ -50,7 +50,7 @@ int parejaJuego(int sd);
 int unirJugadores(int sd);
 bool userCorrecto(string nombreUser);
 bool passCorrecto(string passUser);
-bool login(int sdUser, string nombre);
+bool login(int sdUser, char *nombre);
 bool unlogUser(int sdUser);
 bool deleteGame(int sdUser);
 Juego getGame(int sdUser);
@@ -236,6 +236,7 @@ int main ( )
                                     char *aux;
                                     aux = strtok(buffer, " ");
                                     aux = strtok(NULL, "\n");
+                                    send(i, aux, sizeof(aux), 0);
                                     if (nombreCorrecto(aux))
                                     {
                                         if (login(i, aux))
@@ -247,7 +248,7 @@ int main ( )
                                             strcpy(buffer, "-Err. No se ha podido completar el login\n");
                                         }
                                         send(i, buffer, sizeof(buffer), 0);
-                                }
+                                    }
                                 else
                                 {
                                     strcpy(buffer, "–Err. Usuario incorrecto\n");
@@ -352,12 +353,12 @@ int main ( )
                                 }
                                 bzero(buffer,sizeof(buffer));
                             }
-
+                                */
                             else
                             {   bzero(buffer, sizeof(buffer));
                                 strcpy(buffer, "-Err. Opción NO valida\n");
                                 send(i, buffer, sizeof(buffer), 0);
-                            } */ 
+                            }
                         }
 
                         //Si el cliente introdujo ctrl+c
