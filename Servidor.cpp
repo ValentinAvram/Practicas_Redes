@@ -42,7 +42,7 @@ void split (string mensaje, char seperator);
 void manejador(int signum);
 void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClientes[]);
 bool nombreCorrecto(const char *name);
-bool passCorrecto(const char *pass);
+bool passCorrecto(int descriptor, const char *pass);
 
 // Control de juego
 int unirJugadores(int sd);
@@ -203,7 +203,7 @@ int main ( )
                                 name = aux;
                                 aux = strtok(NULL, " ");
                                 password = aux;
-                                cout<<"Nombre = "<<nombre<<" Pass = "<<password<<endl;
+                                cout<<"Nombre = "<<name<<" Pass = "<<password<<endl;
                                 /*if (nombreCorrecto(name))
                                 {
                                 strcpy(buffer, "–Err. Usuario ya registrado\n");
@@ -224,7 +224,7 @@ int main ( )
                                 salirCliente(i,&readfds,&numClientes,arrayClientes);   
                             }
 
-                            else if (cadenaComienzaCon(buffer, "USUARIO")))
+                            else if (cadenaComienzaCon(buffer, "USUARIO"))
                             {
                                 if (cadenaComienzaCon(buffer, "USUARIO\n"))
                                 {
@@ -236,7 +236,7 @@ int main ( )
                                     char *aux;
                                     aux = strtok(buffer, " ");
                                     aux = strtok(NULL, "\n");
-                                    if (nameExist(aux))
+                                    if (nombreCorrecto(aux))
                                     {
                                         if (login(i, aux))
                                         {
@@ -635,11 +635,11 @@ bool nombreCorrecto(const char *name)
     return false;
 }
 
-bool passCorrecto(const char *pass)
+bool passCorrecto(int descriptor, const char *pass)
 {
     for (int i = 0; i < (int)clientes.size(); i++)
     {
-        if (strcmp(clientes[i].getPassword(), pass) == 0)
+        if ((strcmp(clientes[i].getPassword(), pass) == 0) && (clientes[i].getSd() == descriptor))
         {
             return true;
         }
