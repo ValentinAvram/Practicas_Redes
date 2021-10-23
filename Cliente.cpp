@@ -14,7 +14,7 @@ using namespace std;
 
 int main (int argc, char * const argv[])
 {
-  
+    system("clear");
 	if(argc != 2)
 	{
 		printf("Error en el numero de argumentos\n");

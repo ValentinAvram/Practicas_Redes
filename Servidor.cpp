@@ -251,7 +251,7 @@ int main ( )
                                             bzero(buffer, sizeof(buffer));
                                             strcpy(buffer, "+Ok. Usuario Correcto\n");
                                             send(i, buffer, sizeof(buffer), 0);
-                                      
+                                            
                                                 recibidos = recv(i,buffer,sizeof(buffer),0);
                                                 if(recibidos > 0)
                                                 {
