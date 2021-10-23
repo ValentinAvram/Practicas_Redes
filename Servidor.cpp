@@ -190,20 +190,7 @@ int main ( )
                         if(recibidos > 0)
                         {
                             if(cadenaComienzaCon(buffer, "REGISTER"))
-                            {
-                            //TODO: Añadir register
-                                Usuario usuario;
-                                char *aux;
-                                char *name;
-                                char *password;
-                                char *flag;
-                                aux = strtok(buffer, " ");
-                                aux = strtok(NULL, " ");
-                                aux = strtok(NULL, " ");
-                                name = aux;
-                                aux = strtok(NULL, " ");
-                                password = aux;
-                                cout<<"Nombre = "<<name<<" Pass = "<<password<<endl;
+                            {   
                                 /*if (nombreCorrecto(name))
                                 {
                                 strcpy(buffer, "–Err. Usuario ya registrado\n");
@@ -224,136 +211,117 @@ int main ( )
                                 salirCliente(i,&readfds,&numClientes,arrayClientes);   
                             }
 
+
+
                             else if (cadenaComienzaCon(buffer, "USUARIO"))
                             {
                                 if (cadenaComienzaCon(buffer, "USUARIO\n"))
                                 {
-                                    strcpy(buffer, "-Err. No se ha podido completar el login\n");
-                                    send(i, buffer, sizeof(buffer), 0);
-                                }
-                                else
-                                {
-                                    char *aux;
-                                    aux = strtok(buffer, " ");
-                                    aux = strtok(NULL, "\n");
-                                    send(i, aux, sizeof(aux), 0);
-                                    if (nombreCorrecto(aux))
-                                    {
-                                        if (login(i, aux))
-                                        {
-                                            strcpy(buffer, "+Ok. Usuario correcto\n");
-                                        }
-                                        else
-                                        {
-                                            strcpy(buffer, "-Err. No se ha podido completar el login\n");
-                                        }
-                                        send(i, buffer, sizeof(buffer), 0);
-                                    }
-                                else
-                                {
-                                    strcpy(buffer, "–Err. Usuario incorrecto\n");
-                                    send(i, buffer, sizeof(buffer), 0);
-                                }
-                                }
-                            }
-
-                            else if (cadenaComienzaCon(buffer, "PASSWORD"))
-                            {
-                                if (cadenaComienzaCon(buffer, "PASSWORD\n"))
-                                {
                                     strcpy(buffer, "–ERR. Error en la validación\n");
                                     send(i, buffer, sizeof(buffer), 0);
                                 }
+                                    
                                 else
                                 {
                                     char *aux;
                                     aux = strtok(buffer, " ");
                                     aux = strtok(NULL, "\n");
-                                    if (passCorrecto(i, aux))
+
+                                    FILE *fichero;
+                                    fichero = fopen("users.txt", "r");
+                                    if(fichero == nullptr)
                                     {
-                                        strcpy(buffer, "+Ok. Usuario validado\n");
-                                        send(i, buffer, sizeof(buffer), 0);
-                                    }
-                                    else
+                                        exit(-1);
+                                    }                                
+
+                                    char *linea = nullptr; 
+                                    size_t n = 0;
+
+                                    while ((getline(&linea,&n,fichero)) != -1)
                                     {
-                                        strcpy(buffer, "–ERR. Error en la validación\n");
-                                        send(i, buffer, sizeof(buffer), 0);
+                                        linea = strtok(linea, "|");
+
+                                        if(strcmp(linea, aux) == 0)
+                                        {
+                                            Usuario usuario;
+                                            usuario.setNombre(aux);
+                                            usuario.setSd(i);
+                                            usuario.setLoged(false);
+                                                
+                                            bzero(buffer, sizeof(buffer));
+                                            strcpy(buffer, "+Ok. Usuario Correcto\n");
+                                            send(i, buffer, sizeof(buffer), 0);
+                                      
+                                                recibidos = recv(i,buffer,sizeof(buffer),0);
+                                                if(recibidos > 0)
+                                                {
+                                                    if (cadenaComienzaCon(buffer, "PASSWORD"))
+                                                    {
+                                                        if (cadenaComienzaCon(buffer, "PASSWORD\n"))
+                                                        {
+                                                            strcpy(buffer, "–ERR. Error en la validacion\n");
+                                                            send(i, buffer, sizeof(buffer), 0);
+                                                        }
+                                                        else
+                                                        {
+                                                            char *aux;
+                                                            aux = strtok(buffer, " ");
+                                                            aux = strtok(NULL, "\n");
+
+                                                            FILE *fichero2;
+                                                            fichero2 = fopen("users.txt", "r");
+                                                            if(fichero2 == nullptr)
+                                                            {
+                                                                exit(-1);
+                                                            }                                
+
+                                                            char *linea2 = nullptr; 
+                                                            size_t n2 = 0;
+
+                                                            while ((getline(&linea2,&n2,fichero2)) != -1)
+                                                            {
+                                                                char sep='|';
+                                                                split(linea, sep);  
+                                                                string user = strings[0];
+                                                                string lineastr(linea2);
+
+                                                                lineastr.erase(0,user.size()+1);
+
+                                                                if(strcmp(linea, aux) == 0)
+                                                                {
+                                                                    char *auxPass = strdup(lineastr.c_str());
+                                                                    usuario.setPassword(auxPass);
+                                                                    usuario.setLoged(true);
+                                                                    clientes.push_back(usuario);
+                                                                    strcpy(buffer, "+Ok. Usuario Validado\n");
+                                                                    send(i, buffer, sizeof(buffer), 0);
+                                                                }
+                                                            } 
+                                                        }
+                                                    }
+                                                    else if (cadenaComienzaCon(buffer, "PASSWORD\n") == false)
+                                                    {
+                                                        strcpy(buffer, "-Err. Introduzca su contraseña\n");
+                                                        send(i, buffer, sizeof(buffer), 0);
+                                                    }
+                                                }
+                                            if(usuario.getLoged() == false)
+                                            {
+                                                strcpy(buffer, "-Err. Inicio de sesión incorrecto.\n");
+                                                send(i, buffer, sizeof(buffer), 0);     
+                                                salirCliente(i,&readfds,&numClientes,arrayClientes);  
+                                            }
+                                        }   
                                     }
                                 }
                             }
-                            
-                            else if (strncmp(buffer, "INICIAR-PARTIDA", strlen("INICIAR-PARTIDA")) == 0)
+
+                            else if(cadenaComienzaCon(buffer, "INICIAR-PARTIDA"))
                             {
-                                strcpy(buffer, "AQUI EMPIEZA GAME\n");
+                                strcpy(buffer, "EL VIDEOJUEGO\n");
                                 send(i, buffer, sizeof(buffer), 0);
                             }
-                            //TODO: GAME. VARIOS ELSE IF
-                            //TODO: Ifs de control login pass
-                            // Vector con las funciones de login
-                            /*else if(cadenaComienzaCon(buffer, "USUARIO"))
-                            {
-                                char *aux;
-                                aux = strtok(buffer, " ");
-                                aux = strtok(NULL, "\n");
-                                if (nombreCorrecto(aux))
-                                {
-                                    if (login(i, aux))
-                                    {
-                                        strcpy(buffer, "+Ok. Usuario correcto\n");
-                                    }
-                                    else
-                                    {
-                                        strcpy(buffer, "-Err. No se ha podido completar el login\n");
-                                    }
-                                    send(i, buffer, sizeof(buffer), 0);
-                                }
-                                else
-                                {
-                                    strcpy(buffer, "–Err. Usuario incorrecto\n");
-                                    send(i, buffer, sizeof(buffer), 0);
-                                }
-                            }
-    
 
-                            else if(cadenaComienzaCon(buffer, "PASSWORD"))
-                            {
-                                string texto(buffer);
-                                //login = true;
-                                //registrado = false;
-                                bool exists = false;
-                                char *separator = strdup(" ");
-                                texto.erase(0,9);
-                                char *prueba = strdup(texto.c_str());
-                                send(i, prueba, sizeof(prueba), 0);
-                                string user(prueba);
-                                char *linea = nullptr; 
-                                size_t n = 0;
-                                
-                                FILE *fichero;
-                                fichero = fopen("users.txt", "r");
-                                if(fichero == nullptr)
-                                {
-                                    exit(-1);
-                                }                                
-
-                                while ((getline(&linea,&n,fichero)) != -1)
-                                {//NO lee bien la linea
-                                    if(strcmp(linea, prueba) == 0)
-                                    {
-                                        cout << linea;
-                                        exists=true;
-                                    }
-                                }
-
-                                if(exists == false)
-                                {
-                                    bzero(buffer,sizeof(buffer));
-                                    strcpy(buffer,"\n-Err. Usuario incorrecto\n");
-                                    send(i, buffer, sizeof(buffer), 0);     
-                                }
-                                bzero(buffer,sizeof(buffer));
-                            }
-                                */
                             else
                             {   bzero(buffer, sizeof(buffer));
                                 strcpy(buffer, "-Err. Opción NO valida\n");
@@ -361,7 +329,7 @@ int main ( )
                             }
                         }
 
-                        //Si el cliente introdujo ctrl+c
+                            //Si el cliente introdujo ctrl+c
                         if(recibidos== 0)
                         {
                             printf("El socket %d, ha introducido ctrl+c\n", i);
@@ -370,8 +338,8 @@ int main ( )
                     }
                 }
             }
-        }
-	}
+        }	    
+    }
 	close(sd);
 	return 0;
 }
