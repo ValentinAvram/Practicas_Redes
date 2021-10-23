@@ -31,7 +31,7 @@ bool Juego::newPlayer(int sd)
 }
 
 char * Juego::encryptQuote(char *quote)
-{ // TODO: Compruebalo
+{ 
     char* equote;
     string efrase(quote);
     int n= strlen(quote);
@@ -55,7 +55,7 @@ char * Juego::encryptQuote(char *quote)
     return equote;
 }
 
-char *Juego::revealLetterInPanel(char *quote, char *equote, char *letter) //TODO: A lo mejor falla?¿
+char *Juego::revealLetterInPanel(char *quote, char *equote, char *letter)
 { 
 
     int count=0;
@@ -100,7 +100,7 @@ bool Juego::getRight(char *quote, char *letter)
     return false;
 }
 
-bool Juego::isVowel(char *letter){ //TODO: A lo mejor falla???
+bool Juego::isVowel(char *letter){ 
     
     string letra(letter);
     if(letra == "A"){
@@ -134,16 +134,22 @@ bool Juego::hasMoney(int points){
     return true;
 }
 
-bool Juego::Resolver(char *quote){ // NO FUNCIONA, NECESITA RCV Y SEND
+bool Juego::Resolver(char *quote, int sd){ // NO FUNCIONA, NECESITA RCV Y SEND
     string quotestr(quote);
-    string resolver;
-    cout<<"Introduzca el refran"<<endl;
-    cout<<"Cuidado, si falla aunque sea por ortografia perdera"<<endl;
-    getline(cin, resolver);
-    cout<<"Y la respuesta es...";
+    char *buffer;
+    int recibidos;
+
+    bzero(buffer,sizeof(buffer));
+    strcpy(buffer,"+Ok. Introduzca el refran\nSi falla por ortografia, perderá\n");
+    send(sd,buffer,sizeof(buffer),0);
+    
+    recibidos = recv(sd,buffer,sizeof(buffer),0);
+    string resolver(buffer);
     if (quote == resolver)//strcmp
     {
-        //cout<<"CORRECTA!!!"<<endl;
+        bzero(buffer,sizeof(buffer));
+        strcpy(buffer,"+Ok. Correcta!\n");
+        send(sd,buffer,sizeof(buffer),0);
         return true;
     }
     return false;
@@ -179,45 +185,74 @@ char *Juego::getRandomLine() // NO FUNCIONA, NECESITA RCV Y SEND
     return quote;
 }
 
-void Juego::game(char* quote,int Puntos1, int Puntos2, int Sd1, int Sd2){
+void Juego::game(char* quote,int Puntos1, int Puntos2, int Sd1, int Sd2)
+{
     //Inicializar puntos y sds
     char *equote = encryptQuote(quote);
     int turn=0;
     char* letter;
-    while(isComplete(quote, equote)==false){
-        while(turn == 0){
+                
+    int recibido;
+    recibidos = recv(i,letter,sizeof(letter),0);
+
+    while(isComplete(quote, equote)==false)
+    {
+        while(turn == 0)
+        {
             turn = 1;
-            //TODO: Pedir por pantalla que introduzca una letra al sd1
-            //TODO: Leer por pantalla la letra del sd1
+
+            bzero(buffer,sizeof(buffer));
+            strcpy(buffer,"+Ok. Introduzca la letra que desea despejar, o bien elija RESOLVER\n");
+            send(sd1,buffer,sizeof(buffer),0);
+
+
             string letterstr(letter);
-            if(letterstr=="RESOLVER"){
-                if(Resolver(quote)==true){
-                    //TODO: Mostrar por pantalla que ha ganado el jugador 1
+            if(cadenaComienzaCon(letterstr, "RESOLVER"))
+            {
+                if(Resolver(quote)==true)
+                {
+                    bzero(buffer,sizeof(buffer));
+                    strcpy(buffer,"+Ok. Ha ganado el jugador 1!\n");
+                    send(sd1,buffer,sizeof(buffer),0);
                 }
-                else{
-                    //TODO: Mostrar por pantalla que ha ganado el jugador 2
+                else
+                {
+                    bzero(buffer,sizeof(buffer));
+                    strcpy(buffer,"+Ok. Ha ganado el jugador 2!\n");
+                    send(sd1,buffer,sizeof(buffer),0);
                 }
             }
-            else{
-                if(isVowel(letter)==true){
-                    if(hasMoney(Puntos1)==true){
+            else
+            {
+                if(isVowel(letter)==true)
+                {
+                    if(hasMoney(Puntos1)==true)
+                    {
                         setPuntos1(getPuntos1()-50);
-                        if(getRight(quote, letter)==true){
+                        if(getRight(quote, letter)==true)
+                        {
                             turn = 0;
                             equote=(revealLetterInPanel(quote,equote,letter));
                         }
                         else{
-                            //TODO:Mostrar por pantalla que ha fallado
+                            bzero(buffer,sizeof(buffer));
+                            strcpy(buffer,"-Err. Ha fallado!\n");
+                            send(sd1,buffer,sizeof(buffer),0);
                         }
                     }
-                    else{
-                        //TODO: Mostrar por pantalla que no tiene dinero para comprar vocal, repite turno
+                    else
+                    {
+                        bzero(buffer,sizeof(buffer));
+                        strcpy(buffer,"-Err. No tiene suficientes puntos para comprar vocal. Repite turno!\n");
+                        send(sd1,buffer,sizeof(buffer),0);
                         letter[0]=42;
                         turn=0;
                     }
                 }
-                else{
-                    if(getRight(quote,letter)==true){
+                else
+                {
+                    if(getRight(quote,letter)==true)
+                    {
                         turn=0;
                         setPuntos1(getPuntos1()+50);
                         equote=revealLetterInPanel(quote,equote,letter);
@@ -225,48 +260,73 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int Sd1, int Sd2){
                 }
             }
         }
-        while(turn==1){
+        while(turn==1)
+        {
             turn = 0;
-            //TODO: Pedir por pantalla que introduzca una letra al sd2
+
+            bzero(buffer,sizeof(buffer));
+            strcpy(buffer,"+Ok. Introduzca la letra que desea despejar\n");
+            send(sd2,buffer,sizeof(buffer),0);
+
             //TODO: Leer por pantalla la letra del sd2
             string letterstr(letter);
-               if(letterstr=="RESOLVER"){
-                   if(Resolver(quote)==true){
-                       //TODO: Mostrar por pantalla que ha ganado el jugador 2
+               if(letterstr=="RESOLVER")
+               {
+                   if(Resolver(quote)==true)
+                   {
+                        bzero(buffer,sizeof(buffer));
+                        strcpy(buffer,"+Ok. Ha ganado el jugador 2!\n");
+                        send(sd2,buffer,sizeof(buffer),0);
                    }
-                   else{
-                       //TODO: Mostrar por pantalla que ha ganado el jugador 1
+                   else
+                   {
+                        bzero(buffer,sizeof(buffer));
+                        strcpy(buffer,"+Ok. Ha ganado el jugador 2!\n");
+                        send(sd2,buffer,sizeof(buffer),0);
                    }
 
                }
-               else{
-                if(isVowel(letter)==true){
-                    if(hasMoney(Puntos2)==true){
+               else
+               {
+                if(isVowel(letter)==true)
+                {
+                    if(hasMoney(Puntos2)==true)
+                    {
                         setPuntos2(getPuntos2()-50);
-                        if(getRight(quote, letter)==true){
+                        if(getRight(quote, letter)==true)
+                        {
                             turn=1;
                             equote=(revealLetterInPanel(quote,equote,letter));
                         }
-                        else{
-                            //TODO:Mostrar por pantalla que ha fallado
+                        else
+                        {
+                            bzero(buffer,sizeof(buffer));
+                            strcpy(buffer,"-Err. Ha fallado!\n");
+                            send(sd2,buffer,sizeof(buffer),0);
                         }
 
                     }
-                    else{
-                        //TODO: Mostrar por pantalla que no tiene dinero para comprar vocal, repite turno
+                    else
+                    {
+                        bzero(buffer,sizeof(buffer));
+                        strcpy(buffer,"-Err. No tiene suficientes puntos para comprar vocal. Repite turno!\n");
+                        send(sd2,buffer,sizeof(buffer),0);
+
                         letter[0]=42;
                         turn = 1;
                     }
 
                 }
-                else{
-                    if(getRight(quote,letter)==true){
+                else
+                {
+                    if(getRight(quote,letter)==true)
+                    {
                         turn=1;
                         setPuntos2(getPuntos2()+50);
                         equote=revealLetterInPanel(quote,equote,letter);
                     }
                 }
-               }
+            }
         }
     }
 }

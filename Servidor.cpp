@@ -42,6 +42,7 @@ void split (string mensaje, char seperator);
 void manejador(int signum);
 void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClientes[]);
 bool nombreCorrecto(const char *name);
+bool passCorrecto(const char *pass);
 
 // Control de juego
 int unirJugadores(int sd);
@@ -188,6 +189,8 @@ int main ( )
                         
                         if(recibidos > 0)
                         {
+                            if(cadenaComienzaCon(buffer, "REGISTER"))
+                            {
                             //TODO: Añadir register
                                 Usuario usuario;
                                 char *aux;
@@ -200,8 +203,8 @@ int main ( )
                                 name = aux;
                                 aux = strtok(NULL, " ");
                                 password = aux;
-
-                                if (nombreCorrecto(name))
+                                cout<<"Nombre = "<<nombre<<" Pass = "<<password<<endl;
+                                /*if (nombreCorrecto(name))
                                 {
                                 strcpy(buffer, "–Err. Usuario ya registrado\n");
                                 send(i, buffer, sizeof(buffer), 0);
@@ -213,35 +216,37 @@ int main ( )
                                 clientes.push_back(usuario);
                                 strcpy(buffer, "+Ok. Usuario registrado\n");
                                 send(i, buffer, sizeof(buffer), 0);
-                                }
+                                }*/
+                            }
 
-                            if(strcmp(buffer,"SALIR\n") == 0)
+                            else if(strcmp(buffer,"SALIR\n") == 0)
                             {
                                 salirCliente(i,&readfds,&numClientes,arrayClientes);   
                             }
-                            else if (strncmp(buffer, "USUARIO ", strlen("USUARIO ")) == 0)
+
+                            else if (cadenaComienzaCon(buffer, "USUARIO")))
                             {
-                                if (strncmp(buffer, "USUARIO \n", strlen("USUARIO \n")) == 0)
+                                if (cadenaComienzaCon(buffer, "USUARIO\n"))
                                 {
-                                strcpy(buffer, "-Err. No se ha podido completar el login\n");
-                                send(i, buffer, sizeof(buffer), 0);
+                                    strcpy(buffer, "-Err. No se ha podido completar el login\n");
+                                    send(i, buffer, sizeof(buffer), 0);
                                 }
                                 else
                                 {
-                                char *aux;
-                                aux = strtok(buffer, " ");
-                                aux = strtok(NULL, "\n");
-                                if (gameManager->nameExist(aux))
-                                {
-                                    if (gameManager->logUser(i, aux))
+                                    char *aux;
+                                    aux = strtok(buffer, " ");
+                                    aux = strtok(NULL, "\n");
+                                    if (nameExist(aux))
                                     {
-                                        strcpy(buffer, "+Ok. Usuario correcto\n");
-                                    }
-                                    else
-                                    {
-                                        strcpy(buffer, "-Err. No se ha podido completar el login\n");
-                                    }
-                                    send(i, buffer, sizeof(buffer), 0);
+                                        if (login(i, aux))
+                                        {
+                                            strcpy(buffer, "+Ok. Usuario correcto\n");
+                                        }
+                                        else
+                                        {
+                                            strcpy(buffer, "-Err. No se ha podido completar el login\n");
+                                        }
+                                        send(i, buffer, sizeof(buffer), 0);
                                 }
                                 else
                                 {
@@ -250,50 +255,36 @@ int main ( )
                                 }
                                 }
                             }
-                            else if (strncmp(buffer, "PASSWORD ", strlen("PASSWORD ")) == 0)
+
+                            else if (cadenaComienzaCon(buffer, "PASSWORD"))
                             {
-                                if (strncmp(buffer, "PASSWORD \n", strlen("PASSWORD \n")) == 0)
-                                {
-                                strcpy(buffer, "–ERR. Error en la validación\n");
-                                send(i, buffer, sizeof(buffer), 0);
-                                }
-                                else
-                                {
-                                char *aux;
-                                aux = strtok(buffer, " ");
-                                aux = strtok(NULL, "\n");
-                                if (gameManager->checkPassword(i, aux))
-                                {
-                                    strcpy(buffer, "+Ok. Usuario validado\n");
-                                    send(i, buffer, sizeof(buffer), 0);
-                                }
-                                else
+                                if (cadenaComienzaCon(buffer, "PASSWORD\n"))
                                 {
                                     strcpy(buffer, "–ERR. Error en la validación\n");
                                     send(i, buffer, sizeof(buffer), 0);
                                 }
-                                }
-                            }
-                            else if (strncmp(buffer, "INICIAR-PARTIDA", strlen("INICIAR-PARTIDA")) == 0)
-                            {
-                                int status = gameManager->matchUser(i);
-                                if (status == 1)
-                                {
-                                sprintf(buffer, "+Ok. Empieza la partida. FRASE: %s\n", gameManager->getGame(i).getRefran().getRefranOculto());
-                                send(gameManager->findPair(i), buffer, sizeof(buffer), 0);
-                                send(i, buffer, sizeof(buffer), 0);
-                                }
-                                else if (status == 0)
-                                {
-                                strcpy(buffer, "+Ok. Petición Recibida. quedamos a la espera de más jugadores\n");
-                                send(i, buffer, sizeof(buffer), 0);
-                                }
-
                                 else
                                 {
-                                strcpy(buffer, "-Err. Todas las salas están llenas vuelva a intentarlo más tarde\n");
-                                send(i, buffer, sizeof(buffer), 0);
+                                    char *aux;
+                                    aux = strtok(buffer, " ");
+                                    aux = strtok(NULL, "\n");
+                                    if (passCorrecto(i, aux))
+                                    {
+                                        strcpy(buffer, "+Ok. Usuario validado\n");
+                                        send(i, buffer, sizeof(buffer), 0);
+                                    }
+                                    else
+                                    {
+                                        strcpy(buffer, "–ERR. Error en la validación\n");
+                                        send(i, buffer, sizeof(buffer), 0);
+                                    }
                                 }
+                            }
+                            
+                            else if (strncmp(buffer, "INICIAR-PARTIDA", strlen("INICIAR-PARTIDA")) == 0)
+                            {
+                                strcpy(buffer, "AQUI EMPIEZA GAME\n");
+                                send(i, buffer, sizeof(buffer), 0);
                             }
                             //TODO: GAME. VARIOS ELSE IF
                             //TODO: Ifs de control login pass
@@ -637,6 +628,18 @@ bool nombreCorrecto(const char *name)
     for (int i = 0; i < (int)clientes.size(); i++)
     {
         if (strcmp(clientes[i].getNombre(), name) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool passCorrecto(const char *pass)
+{
+    for (int i = 0; i < (int)clientes.size(); i++)
+    {
+        if (strcmp(clientes[i].getPassword(), pass) == 0)
         {
             return true;
         }
