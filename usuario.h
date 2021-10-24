@@ -23,6 +23,7 @@ class Usuario{
     bool checkNombre;
     bool checkPass;
     bool loged;
+    bool registered;
 
     Usuario();
 
@@ -31,6 +32,7 @@ class Usuario{
     inline char *getPassword() {return password;}
     inline int getStatus() {return estado;}
     inline bool getLoged() {return loged;}
+    inline bool getRegistered() {return registered;}
 
     inline void setSd(int Sd) { sd = Sd;}
     inline void setNombre(char *Nombre) {strncpy(nombre, Nombre, 250);} //Es necesario el strncpy??
@@ -38,6 +40,7 @@ class Usuario{
     inline void setPassword(char *Password) { strncpy(password, Password, 250);} //Es necesario el strncpy??
     inline void setStatus(int Estado) {estado=Estado;}
     inline void setLoged(bool Logeado){loged = Logeado;}
+    inline void setRegistered(bool Registrado){registered = Registrado;}
 
     bool checkLogin();
 

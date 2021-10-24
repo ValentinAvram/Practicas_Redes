@@ -30,10 +30,6 @@ int ngames = 0;
 
 string strings[200];
 
-//Funciones ficheros
-void escrituraTXT(char buffer[350]);
-void lecturaTXT();
-
 //Funciones cadenas
 bool cadenaComienzaCon(const char *cadena1, const char *cadena2); 
 void split (string mensaje, char seperator);
@@ -54,6 +50,9 @@ bool login(int sdUser, char *nombre);
 bool unlogUser(int sdUser);
 bool deleteGame(int sdUser);
 Juego getGame(int sdUser);
+bool checkLoged(int sd);
+bool checkRegistered(int sd);
+
 
 int sd, new_sd;
 int arrayClientes[MAX_CLIENTS];
@@ -189,7 +188,7 @@ int main ( )
                         
                         if(recibidos > 0)
                         {
-                            if(cadenaComienzaCon(buffer, "REGISTER"))
+                            if((cadenaComienzaCon(buffer, "REGISTER")) && (checkLoged(i) == false))
                             {   
                                 string entrada(buffer);
                                 entrada.erase(0, 11);
@@ -215,7 +214,9 @@ int main ( )
                                 strname += "|";
                                 strname += strpass;
                                 char *charEntrada = strdup(strname.c_str());
-                                cout << charEntrada << endl;
+                                string strlane(charEntrada);
+                                strlane += "\n";
+                                char *salida = strdup(strlane.c_str());
                                 FILE *fichero;
                                 fichero = fopen("users.txt", "r+");
                                 if(fichero == nullptr)
@@ -229,7 +230,7 @@ int main ( )
                                 while ((getline(&linea,&n,fichero)) != -1)
                                 {
                                     linea = strtok(linea, "|");
-                                    cout <<linea<< " == "<<name<<endl;
+                                    
                                     if(strcmp(linea, name) == 0)
                                     {
                                         strcpy(buffer, "–ERR. Usuario ya registrado!\n");
@@ -249,11 +250,19 @@ int main ( )
                                     usuario.setSd(i);
                                     usuario.setLoged(true);
                                     usuario.setPassword(password);
+                                    usuario.setRegistered(true);
                                     clientes.push_back(usuario);
-
-                                    fputs( charEntrada, fichero );
- 	                                fclose ( fichero );
+                                    
+                                    FILE *fichero2;
+                                    fichero2 = fopen("users.txt", "a");
+                                    if(fichero2 == nullptr)
+                                    {
+                                        exit(-1);
+                                    }                                
+                                    fputs(salida, fichero2);
+ 	                                fclose ( fichero2 );
                                 }
+                                fclose(fichero);
                             }
 
                             else if(strcmp(buffer,"SALIR\n") == 0)
@@ -261,7 +270,7 @@ int main ( )
                                 salirCliente(i,&readfds,&numClientes,arrayClientes);   
                             }
 
-                            else if (cadenaComienzaCon(buffer, "USUARIO"))
+                            else if ((cadenaComienzaCon(buffer, "USUARIO")) && ((checkLoged(i) == false) && checkRegistered(i) == false))
                             {
                                 if (cadenaComienzaCon(buffer, "USUARIO\n"))
                                 {
@@ -336,22 +345,22 @@ int main ( )
                                                                 lineastr.erase(0,user.size()+1);
                                                                 lineastr.erase(lineastr.size()-2,lineastr.size());
                                                                 linea=strdup(lineastr.c_str());
-                                                                cout<<linea<<endl;
-                                                                cout<<aux<<endl;
+
                                                                 string auxstr(aux);
-                                                                cout<<"Tamano de lineastr "<<lineastr.size()<<endl;
-                                                                cout<<"Tamano de auxstr "<<auxstr.size()<<endl;
+                                                                
                                                                 for(int count=0; count<sizeof(aux);count++){
                                                                     if(linea[count]!=aux[count]){
                                                                         eq=false;
+                                                                        
                                                                     }
                                                                 }
-                                                                cout<<strcmp(linea,aux)<<endl;
+
                                                                 if(eq == true)
                                                                 {
                                                                     char *auxPass = strdup(lineastr.c_str());
                                                                     usuario.setPassword(auxPass);
                                                                     usuario.setLoged(true);
+                                                                    usuario.setRegistered(false);
                                                                     clientes.push_back(usuario);
                                                                     strcpy(buffer, "+Ok. Usuario Validado\n");
                                                                     send(i, buffer, sizeof(buffer), 0);
@@ -377,7 +386,7 @@ int main ( )
                                 }
                             }
 
-                            else if(cadenaComienzaCon(buffer, "INICIAR-PARTIDA"))
+                            else if((cadenaComienzaCon(buffer, "INICIAR-PARTIDA")) && ((checkLoged(i) == true) || checkRegistered(i) == true))
                             {
                                 strcpy(buffer, "EL VIDEOJUEGO\n");
                                 send(i, buffer, sizeof(buffer), 0);
@@ -410,38 +419,6 @@ bool cadenaComienzaCon(const char *cadena1, const char *cadena2){
     int longitud = strlen(cadena2);
     if (strncmp(cadena1, cadena2, longitud) == 0) return true;
     return false;
-}
-
-void escrituraTXT(char buffer[350]) //TODO:
-{
-    ofstream fichero("usuarios.txt"); 
-    fichero<<buffer<<endl;
-    fichero.close();
-}
-
-void lecturaTXT()
-{
-    FILE *fichero;
-    fichero = fopen("users.txt", "r");
-    if (!fichero)
-    {
-        printf("Error abriendo el archivo");
-        exit(-1);
-    }
-    char buffer[MSG_SIZE];
-    while (fgets(buffer, MSG_SIZE, fichero) != NULL)
-    {
-        Usuario newCliente;
-        char *data;
-        
-        data = strtok(buffer, "//");
-        newCliente.setNombre(data);
-        
-        data = strtok(NULL, "\n");
-        newCliente.setNombre(data);
-        
-    }
-    fclose(fichero);
 }
 
 void nuevoGame(Juego juego)
@@ -670,6 +647,30 @@ bool passCorrecto(int descriptor, const char *pass)
     for (int i = 0; i < (int)clientes.size(); i++)
     {
         if ((strcmp(clientes[i].getPassword(), pass) == 0) && (clientes[i].getSd() == descriptor))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool checkLoged(int sd)
+{
+    for(int i = 0; i < clientes.size(); i++)
+    {
+        if((clientes[i].getSd() == sd && clientes[i].getLoged() == true))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool checkRegistered(int sd)
+{
+    for(int i = 0; i < clientes.size(); i++)
+    {
+        if((clientes[i].getSd() == sd && clientes[i].getRegistered() == true))
         {
             return true;
         }

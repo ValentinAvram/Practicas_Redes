@@ -1,3 +1,4 @@
 user|pass
 admin|admin
-Jas-Fasola|1234
+fasola|papapa
+willy|rex
