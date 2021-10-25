@@ -195,13 +195,22 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int sd1, int sd2)
     cout<<"sd2 es "<<sd2<<endl;
     char* buffer;
     bzero(buffer,sizeof(buffer));
-    sprintf(buffer, "Partida encontrada !!\n");
-    send(sd1, buffer, 250, 0);
-    send(sd2, buffer, 250, 0);
+    sprintf(buffer, "+Ok. Partida encontrada !!\n");
+    send(sd1, buffer, sizeof(buffer), 0);
+    send(sd2, buffer, sizeof(buffer), 0);
+    
+
+    sprintf(buffer,"+Ok. Eres el jugador 1\n");
+    send(sd1, buffer, sizeof(buffer), 0);
+
+    sprintf(buffer,"+Ok. Eres el jugador 2\n");
+    send(sd2, buffer, sizeof(buffer), 0);
+
+
     char *equote = encryptQuote(quote);
-    sprintf(buffer, "+La frase encriptada es: %s \n",equote);
-    send(sd1, buffer, 250, 0);
-    send(sd2, buffer, 250, 0);
+    sprintf(buffer, "+Ok. La frase encriptada es: %s \n",equote);
+    send(sd1, buffer, sizeof(buffer), 0);
+    send(sd2, buffer, sizeof(buffer), 0);
     int turn=0;
     char* letter;
     while(isComplete(quote, equote)==false)
@@ -210,17 +219,19 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int sd1, int sd2)
         while(turn == 0)
         {
             sprintf(buffer, "Turno del jugador 1: \n");
-            send(sd1, buffer, 250, 0);
-            send(sd2, buffer, 250, 0);
+            send(sd1, buffer, sizeof(buffer), 0);
+            send(sd2, buffer, sizeof(buffer), 0);
             cout<<"Entra en el sistema de turnos fase 2 (turn 0): "<<turn<<endl;
             turn = 1;
             
 
             bzero(buffer,sizeof(buffer));
             sprintf(buffer,"+Ok. Introduzca la letra que desea despejar, o bien elija RESOLVER\n");
-            send(sd1,buffer,250,0);
+            cout<<"peta aqui 1"<<endl;
+            send(sd1,buffer,sizeof(buffer),0);
+            cout<<"peta aqui 1"<<endl;
             //TODO: Leer cosas bien por buffer y fixear si hubiera que fixear
-            int recibidos1 = recv(sd1,letter,sizeof(letter),0);
+            //int recibidos1 = recv(sd1,letter,sizeof(letter),0);
             cout<<letter<<endl;
             if(cadenaComienza(letter, "RESOLVER"))
             {
@@ -228,13 +239,13 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int sd1, int sd2)
                 {
                     bzero(buffer,sizeof(buffer));
                     sprintf(buffer,"+Ok. Ha ganado el jugador 1!\n");
-                    send(sd1,buffer,250,0);
+                    send(sd1,buffer,sizeof(buffer),0);
                 }
                 else
                 {
                     bzero(buffer,sizeof(buffer));
                     sprintf(buffer,"+Ok. Ha ganado el jugador 2!\n");
-                    send(sd1,buffer,250,0);
+                    send(sd1,buffer,sizeof(buffer),0);
                 }
             }
             else
@@ -252,14 +263,14 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int sd1, int sd2)
                         else{
                             bzero(buffer,sizeof(buffer));
                             sprintf(buffer,"-Err. Ha fallado!\n");
-                            send(sd1,buffer,250,0);
+                            send(sd1,buffer,sizeof(buffer),0);
                         }
                     }
                     else
                     {
                         bzero(buffer,sizeof(buffer));
                         sprintf(buffer,"-Err. No tiene suficientes puntos para comprar vocal. Repite turno!\n");
-                        send(sd1,buffer,250,0);
+                        send(sd1,buffer,sizeof(buffer),0);
                         letter[0]=42;
                         turn=0;
                     }
@@ -282,10 +293,10 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int sd1, int sd2)
             
             bzero(buffer,sizeof(buffer));
             sprintf(buffer,"+Ok. Turno del jugador 2\n");
-            send(sd2,buffer,250,0);
-            send(sd1,buffer,250,0);
+            send(sd2,buffer,sizeof(buffer),0);
+            send(sd1,buffer,sizeof(buffer),0);
             sprintf(buffer,"+Ok. Introduzca la letra que desea despejar, o bien elija RESOLVER\n");
-            send(sd2,buffer,250,0);
+            send(sd2,buffer,sizeof(buffer),0);
 
             int recibidos1 = recv(sd2,letter,sizeof(letter),0);
                if(cadenaComienza(letter, "RESOLVER"))
@@ -294,13 +305,13 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int sd1, int sd2)
                    {
                         bzero(buffer,sizeof(buffer));
                         sprintf(buffer,"+Ok. Ha ganado el jugador 2!\n");
-                        send(sd2,buffer,250,0);
+                        send(sd2,buffer,sizeof(buffer),0);
                    }
                    else
                    {
                         bzero(buffer,sizeof(buffer));
                         sprintf(buffer,"+Ok. Ha ganado el jugador 2!\n");
-                        send(sd2,buffer,250,0);
+                        send(sd2,buffer,sizeof(buffer),0);
                    }
 
                }
@@ -320,7 +331,7 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int sd1, int sd2)
                         {
                             bzero(buffer,sizeof(buffer));
                             sprintf(buffer,"-Err. Ha fallado!\n");
-                            send(sd2,buffer,250,0);
+                            send(sd2,buffer,sizeof(buffer),0);
                         }
 
                     }
@@ -328,7 +339,7 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int sd1, int sd2)
                     {
                         bzero(buffer,sizeof(buffer));
                         sprintf(buffer,"-Err. No tiene suficientes puntos para comprar vocal. Repite turno!\n");
-                        send(sd2,buffer,250,0);
+                        send(sd2,buffer,sizeof(buffer),0);
 
                         letter[0]=42;
                         turn = 1;
