@@ -199,7 +199,7 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int sd1, int sd2)
     send(sd1, buffer, 250, 0);
     send(sd2, buffer, 250, 0);
     char *equote = encryptQuote(quote);
-    sprintf(buffer, "La frase encriptada es: %s \n",equote);
+    sprintf(buffer, "+La frase encriptada es: %s \n",equote);
     send(sd1, buffer, 250, 0);
     send(sd2, buffer, 250, 0);
     int turn=0;
@@ -207,11 +207,11 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int sd1, int sd2)
     while(isComplete(quote, equote)==false)
     {
         cout<<"Entra en el sistema de turno fase 1 (isComplete) "<<isComplete(quote,equote)<<endl;
-        sprintf(buffer, "La frase encriptada es: %s \n",equote);
-        send(sd1, buffer, 250, 0);
         while(turn == 0)
         {
-            
+            sprintf(buffer, "Turno del jugador 1: \n");
+            send(sd1, buffer, 250, 0);
+            send(sd2, buffer, 250, 0);
             cout<<"Entra en el sistema de turnos fase 2 (turn 0): "<<turn<<endl;
             turn = 1;
             
@@ -222,7 +222,6 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int sd1, int sd2)
             //TODO: Leer cosas bien por buffer y fixear si hubiera que fixear
             int recibidos1 = recv(sd1,letter,sizeof(letter),0);
             cout<<letter<<endl;
-            string letterstr(letter);
             if(cadenaComienza(letter, "RESOLVER"))
             {
                 if(Resolver(quote,sd1)==true)
@@ -282,11 +281,13 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int sd1, int sd2)
             turn = 0;
             
             bzero(buffer,sizeof(buffer));
+            sprintf(buffer,"+Ok. Turno del jugador 2\n");
+            send(sd2,buffer,250,0);
+            send(sd1,buffer,250,0);
             sprintf(buffer,"+Ok. Introduzca la letra que desea despejar, o bien elija RESOLVER\n");
             send(sd2,buffer,250,0);
 
             int recibidos1 = recv(sd2,letter,sizeof(letter),0);
-            string letterstr(letter);
                if(cadenaComienza(letter, "RESOLVER"))
                {
                    if(Resolver(quote,sd2)==true)
