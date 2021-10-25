@@ -12,7 +12,7 @@ class Usuario{
     int sd;
     char nombre[250];
     char password[250];
-    int estado; //Status 0 en cola, 1 jugando
+    int estado; //Status 0 conectado, 1 cola, 2 jugando
     
     int sdRival;
     int idJuego;

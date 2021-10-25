@@ -41,6 +41,9 @@ bool nombreCorrecto(const char *name);
 bool passCorrecto(int descriptor, const char *pass);
 
 // Control de juego
+int pickSd(int sd);
+void changeStatusJuego(int sd);
+void changeStatusCola(int sd);
 int unirJugadores(int sd);
 int parejaJuego(int sd);
 int unirJugadores(int sd);
@@ -52,6 +55,7 @@ bool deleteGame(int sdUser);
 Juego getGame(int sdUser);
 bool checkLoged(int sd);
 bool checkRegistered(int sd);
+void nuevoGame(Juego juego);
 
 
 int sd, new_sd;
@@ -165,8 +169,7 @@ int main ( )
                         
                         bzero(buffer, sizeof(buffer));
                         fgets(buffer, sizeof(buffer),stdin);
-                            
-                        //Controlar si se ha introducido "SALIR", cerrando todos los sockets y finalmente saliendo del servidor. (implementar)
+
                         if(strcmp(buffer,"SALIR\n") == 0)
                         {
                             for (int j = 0; j < numClientes; j++)
@@ -334,26 +337,19 @@ int main ( )
 
                                                             char *linea2 = nullptr; 
                                                             size_t n2 = 0;
-                                                            cout<<"aqui1"<<endl;
                                                             while ((getline(&linea2,&n2,fichero2)) != -1)
                                                             {
-                                                                cout<<"aqui2"<<endl;
                                                                 char sep='|';
                                                                 split(linea2, sep);  
                                                                 string user = strings[0];
-                                                                cout <<"user = "<<user<<endl;
                                                                 string lineastr(linea2);
                                                                 bool eq=true;
                                                                 lineastr.erase(0,user.size()+1);
-                                                                //cout << "borrado1 = "<< lineastr<<endl;
                                                                 lineastr.erase(lineastr.size()-1,lineastr.size());
                                                                 
-                                                                //cout << "borrado2 = "<< lineastr<<endl;
                                                                 linea=strdup(lineastr.c_str());
 
                                                                 string auxstr(aux);
-                                                                //cout << "auxstr = "<<auxstr<<endl;
-                                                                //cout << "linea = " <<linea<<endl;
                                                                 
                                                                 for(int count=0; count<sizeof(aux);count++){
                                                                     if(linea[count]!=aux[count]){
@@ -395,8 +391,36 @@ int main ( )
 
                             else if((cadenaComienzaCon(buffer, "INICIAR-PARTIDA")) && ((checkLoged(i) == true) || checkRegistered(i) == true))
                             {
-                                strcpy(buffer, "EL VIDEOJUEGO\n");
-                                send(i, buffer, sizeof(buffer), 0);
+                                changeStatusCola(i);
+                                int sd1=i;
+                                int sd2=0;
+                                int prep = unirJugadores(i);
+                                cout<<"Valor de prep 1: "<<prep<<endl;
+                                Juego juego;
+                                nuevoGame(juego);
+                                if(prep==1){
+                                    strcpy(buffer, "Buscando partida.\n");
+                                    cout<<"Valor de sd2: "<<sd2<<endl;
+                                    send(i, buffer, sizeof(buffer), 0);
+                                    //Esperando a que se una nuevo jugador
+                                    sd2 = pickSd(i);
+                                cout<<"Valor de sd2: "<<sd2<<endl;
+                                if(sd2!=0){
+                                    prep=2;
+                                }
+                                }
+                                if (prep == 2){
+                                    send(i, buffer, sizeof(buffer), 0);
+                                    cout<<"Valor de prep 2(dos jugadores conectados): "<<prep<<endl;
+                                    //Iniciar partida
+                                    cout<<"Entra en iniciar partida\n"<<endl;
+                                    changeStatusJuego(i);
+                                    sd2=pickSd(i);
+                                    cout<<"SD1:"<<sd1<<"\n"<<"SD2:"<<sd2<<endl;
+                                    char* quote=juego.getRandomLine();
+                                    cout<<"\n"<<quote<<endl;
+                                    juego.game(quote,0,0,sd1,sd2);
+                                }
                             }
 
                             else
@@ -421,6 +445,31 @@ int main ( )
 	return 0;
 }
 
+int pickSd(int sd){
+    for(int i = 0; i<30; i++){
+        if((clientes[i].getStatus() == 1)&&(clientes[i].getSd()!=sd)){
+            clientes[i].setStatus(2);
+            return clientes[i].getSd();
+        }
+    }
+    return 0;
+}
+
+void changeStatusJuego(int sd){
+    for(int i = 0; i<30; i++){
+        if(clientes[i].getSd()==sd){
+            clientes[i].setStatus(2);
+        }
+    }
+}
+
+void changeStatusCola(int sd){
+    for(int i = 0; i<30; i++){
+        if(clientes[i].getSd()==sd){
+            clientes[i].setStatus(1);
+        }
+    }
+}
 
 bool cadenaComienzaCon(const char *cadena1, const char *cadena2){
     int longitud = strlen(cadena2);
@@ -466,8 +515,8 @@ int unirJugadores(int sd)
         {
             games.pop_back();
             games.push_back(juego);
-            return 1;
-        }//TODO: Cambiar esto. Reestructurar array modo profe
+            return 2;
+        }
         else if (ngames < 10)
         {
             Juego juego;
