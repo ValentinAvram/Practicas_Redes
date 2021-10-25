@@ -334,19 +334,26 @@ int main ( )
 
                                                             char *linea2 = nullptr; 
                                                             size_t n2 = 0;
-
+                                                            cout<<"aqui1"<<endl;
                                                             while ((getline(&linea2,&n2,fichero2)) != -1)
                                                             {
+                                                                cout<<"aqui2"<<endl;
                                                                 char sep='|';
-                                                                split(linea, sep);  
+                                                                split(linea2, sep);  
                                                                 string user = strings[0];
+                                                                cout <<"user = "<<user<<endl;
                                                                 string lineastr(linea2);
                                                                 bool eq=true;
                                                                 lineastr.erase(0,user.size()+1);
-                                                                lineastr.erase(lineastr.size()-2,lineastr.size());
+                                                                //cout << "borrado1 = "<< lineastr<<endl;
+                                                                lineastr.erase(lineastr.size()-1,lineastr.size());
+                                                                
+                                                                //cout << "borrado2 = "<< lineastr<<endl;
                                                                 linea=strdup(lineastr.c_str());
 
                                                                 string auxstr(aux);
+                                                                //cout << "auxstr = "<<auxstr<<endl;
+                                                                //cout << "linea = " <<linea<<endl;
                                                                 
                                                                 for(int count=0; count<sizeof(aux);count++){
                                                                     if(linea[count]!=aux[count]){

@@ -2,3 +2,6 @@ user|pass
 admin|admin
 fasola|papapa
 willy|rex
+nombre|contra
+nana|ppapapa
+victor|rojas
