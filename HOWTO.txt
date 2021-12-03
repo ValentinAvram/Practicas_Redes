@@ -17,3 +17,4 @@ Usuario:
   - Si escribe algo relativo a un game, antes de empezar checkeamos el ID del juego en el que esta metio, y guardamos toda la informacion
   del juego especifico para manejar la solucitud con respecto a los datos.
  
+FUNCION QUE DEVULEVA UN JUEGO ENTERO;
