@@ -17,4 +17,14 @@ Usuario:
   - Si escribe algo relativo a un game, antes de empezar checkeamos el ID del juego en el que esta metio, y guardamos toda la informacion
   del juego especifico para manejar la solucitud con respecto a los datos.
  
-FUNCION QUE DEVULEVA UN JUEGO ENTERO;
+TODO:
+
+Vector de Juegos del que luego recojamos;
+vector<Juego> games[10];
+
+Funcion DENTRO DEL SERVER que busque en el vector un juego especifico segun su id y que devuelva el juego entero
+
+if(idGame == xxx)
+{
+  puntosJugador1 = games[i].points1;
+}
