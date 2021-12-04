@@ -28,3 +28,8 @@ if(idGame == xxx)
 {
   puntosJugador1 = games[i].points1;
 }
+
+HOW WILL WORK:
+
+1º) El usuario se registra / logea:
+  Mismo sistema que antes, eliminando los while y recieves que puedan bloquear.
