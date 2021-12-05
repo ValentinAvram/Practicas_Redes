@@ -1,0 +1,4 @@
+user|pass
+admin|admin
+nombre|contra
+victor|rojas
