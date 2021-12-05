@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <iostream>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -22,7 +23,7 @@ using namespace std;
 vector <Usuario> users;
 vector <Juego> games;
 int arrayUsers[MAX_CLIENTS];
-int numUsers, nGames;
+int numUsers = 0, nGames = 0;
 fd_set readfds, auxfds;
 int sd, new_sd;
 
@@ -45,10 +46,22 @@ bool getStatus(int sd, int num)
     return true;
 }
 
+int checkStatus(int sd)
+{
+    for(int i = 0; i < users.size(); i++)
+    {
+        if(users[i].getSd() == sd)
+        {
+            return users[i].getStatus();
+        }
+    }
+    return -1;
+}
+
 void salirCliente(int socket, fd_set * readfds, int * numUsers, int arrayClientes[])
 {
   
-    char buffer[250];
+    char buffer[350];
     int j;
     
     close(socket);
@@ -69,8 +82,14 @@ void salirCliente(int socket, fd_set * readfds, int * numUsers, int arrayCliente
     for(j=0; j<(*numUsers); j++)
         if(arrayUsers[j] != socket)
             send(arrayUsers[j],buffer,sizeof(buffer),0);
-
-
+   
+    for(int o = 0; o<users.size(); o++)
+    {
+        if(users[o].getSd() == socket)
+        {
+            users.erase(users.begin() + o);
+        }
+    }
 }
 
 void manejador (int signum)
@@ -123,7 +142,6 @@ void deleteUser(int sd)
     }
 }
 
-
 bool searchGame(int sd)
 {
 
@@ -150,7 +168,6 @@ bool searchGame(int sd)
                 users[j].setStatus(4);
             }
         }
-
         createGame(newGame);
 
         return true;
@@ -164,7 +181,13 @@ bool searchGame(int sd)
             {
                 games[i].setSd2(sd);
                 games[i].setNumP(2);
-
+                for(int j=0; j<users.size(); j++)
+                {
+                    if(users[j].getSd() == sd)
+                    {
+                        users[j].setStatus(4);
+                    }
+                }
                 return true;
             }
         }
@@ -173,7 +196,7 @@ bool searchGame(int sd)
         string quote = newGame.getRandomLine();
         string equote = newGame.encryptQuote(quote);
 
-        newGame.setIDGame(1);
+        newGame.setIDGame(nGames);
         newGame.setSd1(sd);
         newGame.SetPoints1(0);
         newGame.setPoints2(0);
@@ -201,7 +224,6 @@ bool searchGame(int sd)
 
 }
 
-
 int getUserGame(int sd)
 {
     for(int i=0; i<users.size(); i++)
@@ -211,11 +233,11 @@ int getUserGame(int sd)
             return users[i].getIdGame();
         }
     }
-
     return -1;
 }
 
-
+//TODO: Funcion de unir jugadores
+//TODO: Funcion que busca game asociado a un jugador / -1;
 
 int main ( )
 {
@@ -366,7 +388,6 @@ int main ( )
                                 string strname(name);
                                 string strpass(password);
 
-
                                 strname +="|";
                                 strname += strpass;
                                 strname += "\n";
@@ -438,28 +459,10 @@ int main ( )
                                     char *aux;
                                     aux = strtok(buffer, " ");
                                     aux = strtok(NULL, "\n");
-
-                                    FILE *fichero;
-                                    fichero = fopen("users.txt", "r");
-                                    if(fichero == nullptr)
-                                    {
-                                        exit(-1);
-                                    }                                
-
-                                    char *linea = nullptr; 
-                                    size_t n = 0;
-
                                     Usuario newUser;
                                     string name_ = aux;
-                                    
+
                                     if(newUser.checkName(name_) == true)
-                                    {
-                                        bzero(buffer, sizeof(buffer));
-                                        strcpy(buffer, "+OK. Nombre de usuario correcto!\n");
-                                        send(i, buffer, sizeof(buffer), 0);
-                                        salirCliente(i,&readfds,&numUsers,arrayUsers); 
-                                    }
-                                    else
                                     {
                                         bzero(buffer, sizeof(buffer));
                                         strcpy(buffer, "+OK. Nombre de usuario correcto!\n");
@@ -470,12 +473,19 @@ int main ( )
                                         newUser.setStatus(1);
                                         users.push_back(newUser);
                                     }
-                                    fclose(fichero);
+                                    else
+                                    {
+                                        bzero(buffer, sizeof(buffer));
+                                        strcpy(buffer, "-Err. Nombre de usuario incorrecto!\n");
+                                        send(i, buffer, sizeof(buffer), 0);
+                                        salirCliente(i,&readfds,&numUsers,arrayUsers);
+                                    }
                                 }
                             }
 
                             else if((cadenaComienzaCon(buffer, "PASSWORD")) && (getStatus(i, 1)))
                             {
+                                //TODO CHECK STATUS
                                 if (cadenaComienzaCon(buffer, "PASSWORD\n"))
                                 {
                                     bzero(buffer, sizeof(buffer));
@@ -483,8 +493,44 @@ int main ( )
                                     send(i, buffer, sizeof(buffer), 0);
                                 }
                                 else
-                                {
-                                    
+                                {                                  
+                                    char *aux;
+                                    aux = strtok(buffer, " ");
+                                    aux = strtok(NULL, "\n");
+                                    string pass_ = aux;
+                                    string name_ ="*";
+                                    for(int l = 0; l < users.size(); l++)
+                                    {
+                                        if(users[l].getSd() == i)
+                                        {
+                                           name_ = users[l].getName();
+                                        }
+                                    }
+
+                                    Usuario fakeUser;
+                                    if(name_ != "*")
+                                    {
+                                        if(fakeUser.checkLogin(name_, pass_) == true)
+                                        {
+                                            bzero(buffer, sizeof(buffer));
+                                            strcpy(buffer, "+OK. Inicio de sesion correcto\n");
+                                            send(i, buffer, sizeof(buffer), 0);
+                                            for(int l = 0; l < users.size(); l++)
+                                            {
+                                                if(users[l].getSd() == i)
+                                                {
+                                                    users[l].setPassword(pass_);
+                                                    users[l].setStatus(2);
+                                                }   
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        bzero(buffer, sizeof(buffer));
+                                        strcpy(buffer, "–ERR. Error en la validación\n");
+                                        send(i, buffer, sizeof(buffer), 0);
+                                    }
                                 }
                             }
 
@@ -492,21 +538,143 @@ int main ( )
                             else if((cadenaComienzaCon(buffer, "INICIAR PARTIDA")) && (getStatus(i,2)))
                             {
                                 //Añadir comprobaciones externas status
+                                if(checkStatus(i) == 2)
+                                {
+                                    //TODO:
+                                    if(searchGame(i) == true)
+                                    {
+                                        bzero(buffer, sizeof(buffer));
+                                        strcpy(buffer, "+OK. Buscando partida . . .\n");
+                                        send(i, buffer, sizeof(buffer), 0);
+                                        bzero(buffer, sizeof(buffer));
+                                        strcpy(buffer, "+OK. En cuanto tenga un rival, comenzara la partida!\n");
+                                        send(i, buffer, sizeof(buffer), 0);
+
+                                        int idg = getUserGame(i);
+                                        for(int z = 0; z < games.size(); z++)
+                                        {
+                                            if(games[z].getNumP() == 2)
+                                            {
+                                                int j1 = games[z].getSd1();
+                                                int j2 = games[z].getSd2();
+
+                                                bzero(buffer, sizeof(buffer));
+                                                strcpy(buffer, "+OK. Rival encontrado\n");
+                                                send(i, buffer, sizeof(buffer), 0);
+                                                sleep(1);
+                                                bzero(buffer, sizeof(buffer));
+                                                strcpy(buffer, "+OK. Partida Iniciada!\n");
+                                                send(i, buffer, sizeof(buffer), 0);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        bzero(buffer, sizeof(buffer));
+                                        strcpy(buffer, "-ERR. Lo sentimos, nuestros servidores estan llenos. Intentelo mas tarde!\n");
+                                        send(i, buffer, sizeof(buffer), 0);
+                                    }
+
+                                }
+                                else
+                                {
+                                    bzero(buffer, sizeof(buffer));
+                                    strcpy(buffer, "-Err. Opcion NO valida!\n");
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }
                             }
-                            else if((cadenaComienzaCon(buffer, "CONSONANTE")) && (getStatus(i,3)))
+                            else if((cadenaComienzaCon(buffer, "CONSONANTE")) && (getStatus(i,4)))
                             {
                                 //Añadir comprobaciones externas status
+                                if(checkStatus(i) == 4)
+                                {
+                                    //TODO:
+                                }
+                                else
+                                {
+                                    bzero(buffer, sizeof(buffer));
+                                    strcpy(buffer, "-Err. Opcion NO valida!\n");
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }
                             }
-                            else if((cadenaComienzaCon(buffer, "VOCAL")) && (getStatus(i,3)))
+                            else if((cadenaComienzaCon(buffer, "VOCAL")) && (getStatus(i,4)))
                             {
-                                //Añadir comprobaciones externas status         
-                            }else if((cadenaComienzaCon(buffer, "RESOLVER")) && (getStatus(i,3)))
+                                //Añadir comprobaciones externas status 
+                                if(checkStatus(i) == 4)
+                                {
+                                    //TODO:
+                                }
+                                else
+                                {
+                                    bzero(buffer, sizeof(buffer));
+                                    strcpy(buffer, "-Err. Opcion NO valida!\n");
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }        
+                            }
+                            else if((cadenaComienzaCon(buffer, "RESOLVER")) && (getStatus(i,4)))
                             {
                                 //Añadir comprobaciones externas status
+                                if(checkStatus(i) == 4)
+                                {
+                                    //TODO:
+                                }
+                                else
+                                {
+                                    bzero(buffer, sizeof(buffer));
+                                    strcpy(buffer, "-Err. Opcion NO valida!\n");
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }
                             }
-                            else if((cadenaComienzaCon(buffer, "PUNTUACION")) && (getStatus(i,3)))
+                            else if((cadenaComienzaCon(buffer, "PUNTUACION")) && (getStatus(i,4)))
                             {
                                 //Añadir comprobaciones externas status
+                                int idg;
+                                int p1 =-10;
+                                int p2 =-10;
+                            
+                                if(checkStatus(i) == 4)
+                                {
+                                    for(int y = 0; y < users.size(); y ++)
+                                    {
+                                        if(users[y].getSd() == i)
+                                        {
+                                            idg = users[y].getIdGame();
+                                        }
+                                    }
+
+                                    for(int t = 0; t < games.size(); t++)
+                                    {
+                                        if(games[t].getIdJuego() == idg)
+                                        {
+                                            if(games[t].getSd1() == i)
+                                            {
+                                                p1 = games[t].getPuntos1();
+                                            }
+                                            else
+                                            {
+                                                p2 = games[t].getPuntos2();
+                                            }
+                                        }
+                                    }
+                                    if(p1 !=-10)
+                                    {
+                                        bzero(buffer, sizeof(buffer));
+                                        sprintf(buffer, "+OK. Su puntuacion es : %i\n", p1);
+                                        send(i, buffer, sizeof(buffer), 0);    
+                                    }
+                                    else
+                                    {
+                                        bzero(buffer, sizeof(buffer));
+                                        sprintf(buffer, "+OK. Su puntuacion es : %i\n", p2);
+                                        send(i, buffer, sizeof(buffer), 0); 
+                                    }
+                                }
+                                else
+                                {
+                                    bzero(buffer, sizeof(buffer));
+                                    strcpy(buffer, "-Err. Opcion NO valida!\n");
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }
                             }
                             else 
                             {   

@@ -1,5 +1,6 @@
 #include "usuario.h"
 #include <stdio.h>
+#include <iostream>
 #include <string.h>
 
 using namespace std;
@@ -56,7 +57,7 @@ bool Usuario::checkName(string name)
 Devuelve true si el login es correcto
 False si no
 */
-bool Usuario::checkLogin(string name, string pass)
+bool Usuario::checkLogin(string nombre, string pass)
 {
     FILE * archivo;
     archivo = fopen("users.txt", "r+");
@@ -73,19 +74,13 @@ bool Usuario::checkLogin(string name, string pass)
     {
         char *ptr;
         ptr = strtok(linea, "|");
+        string name_ = ptr;
+        char *aux = strtok(NULL, "\n");
+        string pass_ = aux;
 
-        while(ptr != NULL)
+        if(name_ == nombre && pass_ == pass)
         {
-            string name_ = ptr;
-            string pass_ = ptr;
-
-            printf("\nPRUEBA!!\n");
-            printf("Name %s, Pass %s");
-
-            if(name_ == name && pass_ == password)
-            {
-                checkin = false; // Nombre repetido
-            }
+            checkin = false; // Nombre repetido
         }
     }
 
