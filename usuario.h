@@ -26,7 +26,7 @@ class Usuario{
     inline int getIdGame() {return idGame;}
 
     inline void setSd(int Sd) { sd = Sd;}
-    inline void setNombre(string Name) {name = Name;} //Es necesario el strncpy??
+    inline void setName(string Name) {name = Name;} //Es necesario el strncpy??
     inline void setPassword(string Password) { password = Password;} //Es necesario el strncpy??
     inline void setStatus(int Status) {status = Status;}
     inline void setIdGame(int IDGame) {idGame = IDGame;}

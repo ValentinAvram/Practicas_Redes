@@ -52,6 +52,10 @@ bool Usuario::checkName(string name)
     }
 }
 
+/*
+Devuelve true si el login es correcto
+False si no
+*/
 bool Usuario::checkLogin(string name, string pass)
 {
     FILE * archivo;

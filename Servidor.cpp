@@ -111,6 +111,20 @@ void deleteGame(int idG)
     }
 }
 
+void deleteUser(int sd)
+{
+    for(vector<Usuario>::iterator i = users.begin(); i != users.end(); i++)
+    {
+        if(i->getSd() == sd)
+        {
+            users.erase(i);
+            numUsers--;
+        }
+    }
+}
+
+//TODO: Funcion de unir jugadores
+//TODO: Funcion que busca game asociado a un jugador / -1;
 int main ( )
 {
     system("clear");
@@ -284,21 +298,22 @@ int main ( )
                                     
                                     if(strcmp(linea, name) == 0)
                                     {
+                                        bzero(buffer, sizeof(buffer));
                                         strcpy(buffer, "–ERR. Usuario ya registrado!\n");
                                         send(i, buffer, sizeof(buffer), 0);
                                         nuevo = false;
                                         //TODO: Posible fallo al sacar user
                                         salirCliente(i,&readfds,&numUsers,arrayUsers);  
-                                        close(i);
                                     }
                                 }
                                 
                                 if(nuevo == true)
                                 {
+                                    bzero(buffer, sizeof(buffer));
                                     strcpy(buffer, "+Ok. Usuario registrado con exito!\n");
                                     send(i, buffer, sizeof(buffer), 0);
                                     Usuario usuario;
-                                    usuario.setNombre(name);
+                                    usuario.setName(name);
                                     usuario.setSd(i);
                                     usuario.setPassword(password);
                                     usuario.setIdGame(-1);
@@ -320,15 +335,106 @@ int main ( )
 
                             else if((cadenaComienzaCon(buffer, "USUARIO")) && (getStatus(i) == -1))
                             {
-                                //TODO: Crear una instancia usuario XY y almacenarlo en el vector. SetNamed == true
+                                if (cadenaComienzaCon(buffer, "USUARIO\n"))
+                                {
+                                    bzero(buffer, sizeof(buffer));
+                                    strcpy(buffer, "–ERR. Error en la validación\n");
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }
+                                else
+                                {
+                                    char *aux;
+                                    aux = strtok(buffer, " ");
+                                    aux = strtok(NULL, "\n");
+
+                                    FILE *fichero;
+                                    fichero = fopen("users.txt", "r");
+                                    if(fichero == nullptr)
+                                    {
+                                        exit(-1);
+                                    }                                
+
+                                    char *linea = nullptr; 
+                                    size_t n = 0;
+
+                                    Usuario newUser;
+                                    string name_ = aux;
+                                    
+                                    if(newUser.checkName(name_) == true)
+                                    {
+                                        bzero(buffer, sizeof(buffer));
+                                        strcpy(buffer, "+OK. Nombre de usuario correcto!\n");
+                                        send(i, buffer, sizeof(buffer), 0);
+                                        salirCliente(i,&readfds,&numUsers,arrayUsers); 
+                                    }
+                                    else
+                                    {
+                                        bzero(buffer, sizeof(buffer));
+                                        strcpy(buffer, "+OK. Nombre de usuario correcto!\n");
+                                        send(i, buffer, sizeof(buffer), 0);
+                                        newUser.setIdGame(-1);
+                                        newUser.setName(name_);
+                                        newUser.setSd(i);
+                                        newUser.setStatus(1);
+                                        users.push_back(newUser);
+                                    }
+                                    fclose(fichero);
+                                }
                             }
 
                             else if((cadenaComienzaCon(buffer, "PASSWORD")) && (getStatus(i) == 1))
                             {
                                 //TODO: Acceder a la instancia XY del vector
+                                char *aux;
+                                aux = strtok(buffer, " ");
+                                aux = strtok(NULL, "\n");
+                                string pass_ = aux;
+
+                                for(int u = 0; u < users.size(); u++)
+                                {
+                                    if(users[u].getSd() == i)
+                                    {
+                                        string name_ = users[u].getName();
+                                        if(users[u].checkLogin(name_, pass_) == true)
+                                        {
+                                            bzero(buffer, sizeof(buffer));
+                                            strcpy(buffer, "+OK. Inicio de sesión correcto!\n");
+                                            send(i, buffer, sizeof(buffer), 0);
+                                            users[u].setPassword(pass_);
+                                        }
+                                        else
+                                        {
+                                            bzero(buffer, sizeof(buffer));
+                                            strcpy(buffer, "-ERR. Password incorrecta!\n");
+                                            send(i, buffer, sizeof(buffer), 0);
+                                            deleteUser(i);
+                                            salirCliente(i,&readfds,&numUsers,arrayUsers);
+                                        }
+                                    }
+                                }
                             }
 
-                            else
+                            //TODO: SISTEMA DE JUEGO, FUNCIONES SEPARADAS SEGUN STATUS
+                            else if((cadenaComienzaCon(buffer, "INICIAR PARTIDA")) && (getStatus(i) == 2))
+                            {
+
+                            }
+                            else if((cadenaComienzaCon(buffer, "CONSONANTE")) && (getStatus(i) == 3))
+                            {
+
+                            }
+                            else if((cadenaComienzaCon(buffer, "VOCAL")) && (getStatus(i) == 3))
+                            {
+
+                            }else if((cadenaComienzaCon(buffer, "RESOLVER")) && (getStatus(i) == 3))
+                            {
+
+                            }
+                            else if((cadenaComienzaCon(buffer, "PUNTUACION")) && (getStatus(i) == 3))
+                            {
+
+                            }
+                            else 
                             {   
                                 bzero(buffer, sizeof(buffer));
                                 strcpy(buffer, "-Err. Opcion NO valida!\n");
