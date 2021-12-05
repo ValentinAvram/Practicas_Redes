@@ -11,8 +11,8 @@ bool cadenaComienza(const char *cadena1, const char *cadena2);
 
 Juego::Juego()
 {
-    puntos1 = 0;
-    puntos2 = 0;
+    points1 = 0;
+    points2 = 0;
     numP = 0;
 }
 
@@ -31,67 +31,58 @@ bool Juego::newPlayer(int sd)
     else{
         return false;
     }
-}
+}// If return false, game is full
 
-char * Juego::encryptQuote(char *quote)
-{ 
-    char* equote;
-    string efrase(quote);
-    int n= strlen(quote);
+string Juego::encryptQuote(string quote)
+{
+    int n= quote.size();
 
     for(int g = 0; g<n-1; g++)
     {
         
-        if(efrase[g]== ' ')
+        if(quote[g]== ' ')
         {
-            efrase[g] = ' ';
+            quote[g] = ' ';
         }
         else
         {
-            efrase[g] = '-';
+            quote[g] = '-';
         }
     }
-    efrase[n+1]='\0';
+    quote[n+1]='\0';
 
-    equote= strdup(efrase.c_str());
-
-    return equote;
+    return quote;
 }
 
-char *Juego::revealLetterInPanel(char *quote, char *equote, char *letter)
-{ 
+string Juego::revealLetterInPanel(string quote, string equote, string letter)
+{
+    int count = 0;
+    int n = quote.size();
 
-    int count=0;
-    int n= strlen(quote);
-    string quotestr(quote);
-    string equotestr(equote);
-    string letterstr(letter);
     for(int g = 0; g<n; g++)
     {
-        if(equotestr[g]==letterstr[0])
+        if(equote[g]==letter[0])
         {
-            letterstr[0]=42;
+            letter[0]=42;
         }
     }
+
     for(int h=0; h<n+1; h++)
     {
-    
-        if(quotestr[h]==letterstr[0])
+        if(quote[h]==letter[0])
         {
-            equotestr[h] = quotestr[h];
+            equote[h] = quote[h];
             count ++;
         }
     }
-    equote= strdup(equotestr.c_str());
 
     return equote;
 }
 
-bool Juego::getRight(char *quote, char *letter)
+bool Juego::getRight(string quote, string letter)
 {
-    string quotestr(quote);
-    string letterstr(letter);
-    int n= strlen(quote);
+    int n = quote.size();
+
     for(int g = 0; g<n; g++)
     {
         if(quote[g] == letter[0])
@@ -103,33 +94,34 @@ bool Juego::getRight(char *quote, char *letter)
     return false;
 }
 
-bool Juego::isVowel(char *letter){ 
+bool Juego::isVowel(string letter)
+{ 
     
-    string letra(letter);
-    if(letra == "A"){
+    if(letter == "A"){
         return true;
     }
 
-    if(letra == "E"){
+    if(letter == "E"){
         return true;
     }
 
-    if(letra == "I"){
+    if(letter == "I"){
         return true;
     }
 
-    if(letra == "O"){
+    if(letter == "O"){
         return true;
     }
 
-    if(letra == "U"){
+    if(letter == "U"){
         return true;
     }
 
     return false;
 }
 
-bool Juego::hasMoney(int points){
+bool Juego::hasMoney(int points)
+{
     if(points<50)
     {
         return false;
@@ -137,32 +129,20 @@ bool Juego::hasMoney(int points){
     return true;
 }
 
-bool Juego::Resolver(char *quote, int sd){ // NO FUNCIONA, NECESITA RCV Y SEND
-    string quotestr(quote);
-    char *buffer;
-    int recibidos;
-
-    bzero(buffer,350);
-    sprintf(buffer,"+Ok. Introduzca el refran\nSi falla por ortografia, perderá\n");
-    send(sd,buffer,250,0);
-    
-    recibidos = recv(sd,buffer,350,0);
-    string resolver(buffer);
-    if (quote == resolver)//strcmp
+bool Juego::Resolver(string quote, string userTry)
+{ 
+    //userTry es la frase que introduce el usuario
+    if (quote == userTry)//strcmp
     {
-        bzero(buffer,350);
-        sprintf(buffer,"+Ok. Correcta!\n");
-        send(sd,buffer,250,0);
         return true;
     }
     return false;
-}
+}//Return true if users try is correct
 
-char *Juego::getRandomLine() // NO FUNCIONA, NECESITA RCV Y SEND
+string Juego::getRandomLine() 
 {
-    int random = 0;
     srand(time(0));
-    random = rand() % 8;
+    int random = rand() % 8;
 
     FILE *fichero;
     fichero = fopen("refranes.txt", "r");
@@ -184,11 +164,12 @@ char *Juego::getRandomLine() // NO FUNCIONA, NECESITA RCV Y SEND
 
     string quoteStr = refranes[random];
     quoteStr.pop_back(); 
-    strncpy(quote, quoteStr.c_str(), 350);
+    quote = quoteStr;
     return quote;
 }
 
-void Juego::game(char* quote,int Puntos1, int Puntos2, int sd1, int sd2)
+/*
+void Juego::game(string quote, int Puntos1, int Puntos2, int sd1, int sd2)
 {
     cout<<"Entra aqui\n"<<endl;
     cout<<"sd1 es "<<sd1<<endl;
@@ -351,12 +332,11 @@ void Juego::game(char* quote,int Puntos1, int Puntos2, int sd1, int sd2)
             }
         }
     }
-}
-bool Juego::isComplete(char*quote, char* equote){
-    string quotestr(quote);
-    string equotestr(equote);
+}*/
 
-    if(quotestr==equotestr){
+bool Juego::isComplete(string quote, string equote){
+
+    if(quote == equote){
         return true;
     }
     return false;

@@ -8,61 +8,53 @@ using namespace std;
 class Juego{
     private:
 
-    int idJuego;
-
+    int idGame;
     int sd1;
     int sd2;
-
-    int puntos1;
-    int puntos2;
-
+    int points1;
+    int points2;
     int numP; 
 
-    char quote[350];
-    char equote[350];
-    char letter[350]; //Añadido
+    string quote;
+    string equote;
+    string letter;
 
     public: //TODO: Añadir Getters y Setters que faltan
 
     Juego();
 
-    inline int getIdJuego() {return idJuego;}
-
+    inline int getIdJuego() {return idGame;}
     inline int getSd1() {return sd1;}
-    inline int getSd2() {return sd2;}
-    
-    inline int getPuntos1() {return puntos1;}
-    inline int getPuntos2() {return puntos2;}
-
+    inline int getSd2() {return sd2;}   
+    inline int getPuntos1() {return points1;}
+    inline int getPuntos2() {return points2;}
     inline int getNumP() {return numP;}
+    inline string getQuote() {return quote;}
+    inline string getEQuote() {return equote;}
+    inline string getLetter() {return letter;}
 
-    inline char *getQuote() {return quote;}
-    inline char *getEQuote() {return equote;}
-    inline char *getLetter() {return letter;}
 
-    inline void setIdJuego(int IDJuego) {idJuego = IDJuego;}
-
+    inline void setIDGame(int IdGame) {idGame = IdGame;}
     inline void setSd1(int Sd1) {sd1=Sd1;}
     inline void setSd2(int Sd2) {sd2=Sd2;}
-
-    inline void setPuntos1(int Puntos1) {puntos1=Puntos1;}
-    inline void setPuntos2(int Puntos2) {puntos2=Puntos2;}
-
+    inline void SetPoints1(int Puntos1) {points1=Puntos1;}
+    inline void setPoints2(int Puntos2) {points2=Puntos2;}
     inline void setNumP(int NumP) {numP=NumP;}
-    //...
-    inline void setQuote(char *Quote) {strncpy(quote, Quote, 350);}
-    inline void setLetter(char *Letter) {strncpy(letter, Letter, 250);}
+    inline void setQuote(string Quote) {quote = Quote;}
+    inline void setEquote(string Equote) {equote = Equote;}
+    inline void setLetter(string Letter) {letter = Letter;}
 
     bool newPlayer(int sd);
-    char* encryptQuote(char * quote);
-    char *revealLetterInPanel(char * quote, char * equote, char *letter);
-    bool getRight(char *quote, char *letter);
-    bool isVowel(char *letter);
+    string encryptQuote(string  quote);
+    string revealLetterInPanel(string quote, string equote, string letter);
+    bool getRight(string quote, string letter);
+    bool isVowel(string letter);
     bool hasMoney(int points);
-    bool Resolver(char *quote, int sd);
-    char *getRandomLine();
-    void game(char* quote, int Puntos1, int Puntos2, int sd1, int sd2);
-    bool isComplete(char* quote, char* equote);
+    bool Resolver(string quote, string userTry);
+    string getRandomLine();
+    void game(string quote, int Puntos1, int Puntos2, int sd1, int sd2);
+    bool isComplete(string quote, string equote);
+    Juego returnGame(int idGame);
 };
 
 #endif
