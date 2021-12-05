@@ -67,15 +67,20 @@ int main (int argc, char * const argv[])
         if(FD_ISSET(sd, &auxfds)){
             
             bzero(buffer,sizeof(buffer));
-            recv(sd,buffer,sizeof(buffer),0);
-            printf("\n%s\n",buffer);
-            
-            if(strcmp(buffer,"Demasiados clientes conectados\n") == 0)
-            fin =1;
-            
-            if(strcmp(buffer,"Desconexión servidor\n") == 0)
-            fin =1;
-            
+            int recibidos = recv(sd,buffer,sizeof(buffer),0);
+            if(recibidos > 0)
+            {
+                printf("\n%s\n",buffer);
+                
+                if(strcmp(buffer,"Demasiados clientes conectados\n") == 0)
+                fin =1;
+                
+                if(strcmp(buffer,"Desconexión servidor\n") == 0)
+                fin =1;
+                
+                if(strcmp(buffer,"–Err. Cierre del servidor!\n") == 0)
+                fin =1;
+            }
         }
         else
         {

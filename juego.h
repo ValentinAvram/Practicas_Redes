@@ -1,6 +1,7 @@
 #ifndef JUEGO_H
 #define JUEGO_H
 
+#include <string>
 #include <cstring>
 
 using namespace std;
@@ -13,7 +14,9 @@ class Juego{
     int sd2;
     int points1;
     int points2;
-    int numP; 
+    //Jugadores que hay
+    int numP;
+    int turn;
 
     string quote;
     string equote;
@@ -32,6 +35,7 @@ class Juego{
     inline string getQuote() {return quote;}
     inline string getEQuote() {return equote;}
     inline string getLetter() {return letter;}
+    inline int getTurn() {return turn;}
 
 
     inline void setIDGame(int IdGame) {idGame = IdGame;}
@@ -43,6 +47,7 @@ class Juego{
     inline void setQuote(string Quote) {quote = Quote;}
     inline void setEquote(string Equote) {equote = Equote;}
     inline void setLetter(string Letter) {letter = Letter;}
+    inline void setTurn(int Turn) {turn = Turn;}
 
     bool newPlayer(int sd);
     string encryptQuote(string  quote);

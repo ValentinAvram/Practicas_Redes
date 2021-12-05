@@ -13,7 +13,7 @@ class Usuario{
     string name;
     string password;
     int status; //Status 0 register, 1 only name, 2 logged, 3 in queue, 4 in game
-    int idGame; // Solo si status == 2 (inGame)
+    int idGame; // Solo si status == 4 (inGame)
 
 
     public:

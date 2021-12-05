@@ -33,16 +33,16 @@ bool cadenaComienzaCon(const char *cadena1, const char *cadena2)
     return false;
 } 
 
-int getStatus(int sd)
+bool getStatus(int sd, int num)
 {
     for(int i = 0; i < users.size(); i++)
     {
-        if((users[i].getSd() == sd))
+        if((users[i].getSd() == sd) && (users[i].getStatus()) != num)
         {
-            return users[i].getStatus();
+            return false;
         }
     }
-    return -2;
+    return true;
 }
 
 void salirCliente(int socket, fd_set * readfds, int * numUsers, int arrayClientes[])
@@ -123,8 +123,100 @@ void deleteUser(int sd)
     }
 }
 
-//TODO: Funcion de unir jugadores
-//TODO: Funcion que busca game asociado a un jugador / -1;
+
+bool searchGame(int sd)
+{
+
+    if(nGames == 0)
+    {
+        Juego newGame;
+        string quote = newGame.getRandomLine();
+        string equote = newGame.encryptQuote(quote);
+
+        newGame.setIDGame(1);
+        newGame.setSd1(sd);
+        newGame.SetPoints1(0);
+        newGame.setPoints2(0);
+        newGame.setTurn(1);
+        newGame.setQuote(quote);
+        newGame.setEquote(equote);
+        newGame.setLetter("-");
+        newGame.setNumP(1);
+
+        for(int j=0; j<users.size(); j++)
+        {
+            if(users[j].getSd() == sd)
+            {
+                users[j].setStatus(4);
+            }
+        }
+
+        createGame(newGame);
+
+        return true;
+    }
+    
+    else if(nGames>0 && nGames<10)
+    {
+        for(int i=0; i<games.size(); i++)
+        {
+            if(games[i].getNumP()==1)
+            {
+                games[i].setSd2(sd);
+                games[i].setNumP(2);
+
+                return true;
+            }
+        }
+
+        Juego newGame;
+        string quote = newGame.getRandomLine();
+        string equote = newGame.encryptQuote(quote);
+
+        newGame.setIDGame(1);
+        newGame.setSd1(sd);
+        newGame.SetPoints1(0);
+        newGame.setPoints2(0);
+        newGame.setTurn(1);
+        newGame.setQuote(quote);
+        newGame.setEquote(equote);
+        newGame.setLetter("-");
+        newGame.setNumP(1);
+
+        createGame(newGame);
+
+        for(int k=0; k<users.size(); k++)
+        {
+            if(users[k].getSd() == sd)
+            {
+                users[k].setStatus(4);
+            }
+        }
+
+        return true;
+
+    }
+
+    return false;
+
+}
+
+
+int getUserGame(int sd)
+{
+    for(int i=0; i<users.size(); i++)
+    {
+        if(users[i].getSd()==sd)
+        {
+            return users[i].getIdGame();
+        }
+    }
+
+    return -1;
+}
+
+
+
 int main ( )
 {
     system("clear");
@@ -199,7 +291,7 @@ int main ( )
                                 arrayUsers[numUsers] = new_sd;
                                 numUsers++;
                                 FD_SET(new_sd,&readfds);
-                            
+                                bzero(buffer, sizeof(buffer));
                                 strcpy(buffer, "Bienvenido al juego de la Ruleta de la Suerte\n");                            
                                 send(new_sd,buffer,sizeof(buffer),0);
                             
@@ -252,7 +344,7 @@ int main ( )
                             {
                                 salirCliente(i,&readfds,&numUsers,arrayUsers);       
                             }
-                            else if((cadenaComienzaCon(buffer, "REGISTER")) && (getStatus(i) == -1))
+                            else if((cadenaComienzaCon(buffer, "REGISTER")) && (getStatus(i, -1)))
                             {
                                 string entrada(buffer);
                                 entrada.erase(0, 11);
@@ -274,13 +366,13 @@ int main ( )
                                 string strname(name);
                                 string strpass(password);
 
-                                strname += "|";
+
+                                strname +="|";
                                 strname += strpass;
-                                char *charEntrada = strdup(strname.c_str());
-                                string strlane(charEntrada);
-                                strlane += "\n";
-                                char *salida = strdup(strlane.c_str());
+                                strname += "\n";
                                 
+                                const char *salida = strname.c_str();
+
                                 FILE *fichero;
                                 fichero = fopen("users.txt", "r+");
                                 
@@ -333,7 +425,7 @@ int main ( )
                                 fclose(fichero);
                             }
 
-                            else if((cadenaComienzaCon(buffer, "USUARIO")) && (getStatus(i) == -1))
+                            else if((cadenaComienzaCon(buffer, "USUARIO")) && (getStatus(i, -1) ))
                             {
                                 if (cadenaComienzaCon(buffer, "USUARIO\n"))
                                 {
@@ -382,57 +474,39 @@ int main ( )
                                 }
                             }
 
-                            else if((cadenaComienzaCon(buffer, "PASSWORD")) && (getStatus(i) == 1))
+                            else if((cadenaComienzaCon(buffer, "PASSWORD")) && (getStatus(i, 1)))
                             {
-                                //TODO: Acceder a la instancia XY del vector
-                                char *aux;
-                                aux = strtok(buffer, " ");
-                                aux = strtok(NULL, "\n");
-                                string pass_ = aux;
-
-                                for(int u = 0; u < users.size(); u++)
+                                if (cadenaComienzaCon(buffer, "PASSWORD\n"))
                                 {
-                                    if(users[u].getSd() == i)
-                                    {
-                                        string name_ = users[u].getName();
-                                        if(users[u].checkLogin(name_, pass_) == true)
-                                        {
-                                            bzero(buffer, sizeof(buffer));
-                                            strcpy(buffer, "+OK. Inicio de sesión correcto!\n");
-                                            send(i, buffer, sizeof(buffer), 0);
-                                            users[u].setPassword(pass_);
-                                        }
-                                        else
-                                        {
-                                            bzero(buffer, sizeof(buffer));
-                                            strcpy(buffer, "-ERR. Password incorrecta!\n");
-                                            send(i, buffer, sizeof(buffer), 0);
-                                            deleteUser(i);
-                                            salirCliente(i,&readfds,&numUsers,arrayUsers);
-                                        }
-                                    }
+                                    bzero(buffer, sizeof(buffer));
+                                    strcpy(buffer, "–ERR. Error en la validación\n");
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }
+                                else
+                                {
+                                    
                                 }
                             }
 
                             //TODO: SISTEMA DE JUEGO, FUNCIONES SEPARADAS SEGUN STATUS
-                            else if((cadenaComienzaCon(buffer, "INICIAR PARTIDA")) && (getStatus(i) == 2))
+                            else if((cadenaComienzaCon(buffer, "INICIAR PARTIDA")) && (getStatus(i,2)))
                             {
-
+                                //Añadir comprobaciones externas status
                             }
-                            else if((cadenaComienzaCon(buffer, "CONSONANTE")) && (getStatus(i) == 3))
+                            else if((cadenaComienzaCon(buffer, "CONSONANTE")) && (getStatus(i,3)))
                             {
-
+                                //Añadir comprobaciones externas status
                             }
-                            else if((cadenaComienzaCon(buffer, "VOCAL")) && (getStatus(i) == 3))
+                            else if((cadenaComienzaCon(buffer, "VOCAL")) && (getStatus(i,3)))
                             {
-
-                            }else if((cadenaComienzaCon(buffer, "RESOLVER")) && (getStatus(i) == 3))
+                                //Añadir comprobaciones externas status         
+                            }else if((cadenaComienzaCon(buffer, "RESOLVER")) && (getStatus(i,3)))
                             {
-
+                                //Añadir comprobaciones externas status
                             }
-                            else if((cadenaComienzaCon(buffer, "PUNTUACION")) && (getStatus(i) == 3))
+                            else if((cadenaComienzaCon(buffer, "PUNTUACION")) && (getStatus(i,3)))
                             {
-
+                                //Añadir comprobaciones externas status
                             }
                             else 
                             {   
@@ -440,18 +514,18 @@ int main ( )
                                 strcpy(buffer, "-Err. Opcion NO valida!\n");
                                 send(i, buffer, sizeof(buffer), 0);
                             }
-                            //Si el cliente introdujo ctrl+c
-                            if(recibidos == 0)
-                            {
-                                printf("El socket %d, ha introducido ctrl+c\n", i);
-                                salirCliente(i,&readfds,&numUsers,arrayUsers);
-                            }
+                        }
+                        //Si el cliente introdujo ctrl+c
+                        if(recibidos == 0)
+                        {
+                        printf("El socket %d, ha introducido ctrl+c\n", i);
+                        salirCliente(i,&readfds,&numUsers,arrayUsers);
                         }
                     }
                 }
             }
 		}
-
+    }
 	close(sd);
 	return 0;
 }
