@@ -81,10 +81,6 @@ int main (int argc, char * const argv[])
                 if(strcmp(buffer,"–Err. Cierre del servidor!\n") == 0)
                 fin =1;
 
-                if(strcmp(buffer,"+OK. Rival encontrado\n") == 0)
-                sleep(1);
-                system("clear");
-
                 if(strcmp(buffer,"-ERR. Lo sentimos, nuestros servidores estan llenos. Intentelo mas tarde!\n") == 0)
                 fin =1;
 
