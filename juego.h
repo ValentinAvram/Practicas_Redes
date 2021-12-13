@@ -52,7 +52,7 @@ class Juego{
     bool newPlayer(int sd);
     string encryptQuote(string  quote);
     string revealLetterInPanel(string quote, string equote, string letter);
-    bool getRight(string quote, string letter);
+    int getRight(string quote, string letter);
     bool isVowel(string letter);
     bool hasMoney(int points);
     bool Resolver(string quote, string userTry);

@@ -135,7 +135,6 @@ void deleteGame(int idG)
     {
         if(games[i].getIdJuego() == idG)
         {
-            cout << "entra"<<endl;
             games.erase(games.begin()+i);
             nGames--;
         }
@@ -144,11 +143,11 @@ void deleteGame(int idG)
 
 void deleteUser(int sd)
 {
-    for(vector<Usuario>::iterator i = users.begin(); i != users.end(); i++)
+    for(int i = 0; i < users.size(); i++)
     {
-        if(i->getSd() == sd)
+        if(users[i].getSd() == sd)
         {
-            users.erase(i);
+            users.erase(users.begin()+i);
             numUsers--;
         }
     }
@@ -399,6 +398,7 @@ int main ( )
                                     }
                                 } 
                                 salirCliente(i,&readfds,&numUsers,arrayUsers); 
+                                deleteUser(i);
                                       
                             }
                             
@@ -670,14 +670,14 @@ int main ( )
                                                     
                                                     if(games[o].isVowel(con) == false)
                                                     {
-                                                        if(games[o].getRight(orFrase,con) == true)
+                                                        if(games[o].getRight(orFrase,con) != 0)
                                                         {
+                                                            int nreps = games[o].getRight(orFrase,con);
                                                             bool chck = false;
                                                             for(int p = 0; p < encFrase.length();p++)
                                                             {
                                                                 if(encFrase[p] == con[0])
                                                                 {
-
                                                                     chck = true;
                                                                 }
                                                             }
@@ -695,13 +695,15 @@ int main ( )
                                                             }
                                                             else
                                                             {
-                                                                cout <<"eqb = "<<encFrase<<endl;
                                                                 string newEnc = games[o].revealLetterInPanel(orFrase, encFrase, con);
                                                                 games[o].setEquote(newEnc);
-                                                                games[o].SetPoints1(games[o].getPuntos1() + 50);
-
+                                                                games[o].SetPoints1(games[o].getPuntos1() + (nreps *50));
+                                                                
+                                                                string acierto = "+OK. La consonante " + con + " aparece " + to_string(nreps) + " veces\n";
+                                                                cout <<acierto<<endl;
                                                                 bzero(buffer, sizeof(buffer));
-                                                                strcpy(buffer, "+OK. Letra correcta!\n");
+                                                                strcpy(buffer, acierto.c_str());
+                                                                sleep(1);
                                                                 send(i, buffer, sizeof(buffer), 0);
 
                                                                 string salida = "+OK. El panel es : " + games[o].getEQuote();
@@ -750,12 +752,19 @@ int main ( )
                                                         games[o].setTurn(2); 
                                                     }
                                                 }
+                                                else if(((games[o].getTurn() == 1) && (games[o].getSd2() == i)) || ((games[o].getTurn() == 2) && (games[o].getSd1() == i)))
+                                                {
+                                                    bzero(buffer, sizeof(buffer));
+                                                    strcpy(buffer, "-ERR. No es su turno, espere!\n");
+                                                    send(i, buffer, sizeof(buffer), 0);
+                                                }
                                                 else if((games[o].getTurn() == 2) && (games[o].getSd2() == i))
                                                 {                                                   
                                                     if(games[o].isVowel(con) == false)
                                                     {
-                                                        if(games[o].getRight(orFrase,con) == true)
-                                                        {                                                           
+                                                        if(games[o].getRight(orFrase,con) != 0)
+                                                        {                                     
+                                                            int nreps = games[o].getRight(orFrase, con);                       
                                                             bool chck = false;
                                                             for(int p = 0; p < encFrase.length();p++)
                                                             {
@@ -779,7 +788,7 @@ int main ( )
                                                             {
                                                                 string newEnc = games[o].revealLetterInPanel(orFrase, encFrase, con);
                                                                 games[o].setEquote(newEnc);
-                                                                games[o].setPoints2(games[o].getPuntos2() + 50);
+                                                                games[o].setPoints2(games[o].getPuntos2() + (nreps*50));
 
                                                                 bzero(buffer, sizeof(buffer));
                                                                 strcpy(buffer, "+OK. Letra correcta!\n");
@@ -872,7 +881,7 @@ int main ( )
                                     if(con.length() > 1)
                                     {
                                         bzero(buffer, sizeof(buffer));
-                                        strcpy(buffer, "–ERR. Ha introducido mas de una consontante\n");
+                                        strcpy(buffer, "–ERR. Ha introducido mas de una vocal!\n");
                                         send(i, buffer, sizeof(buffer), 0);
                                     }
                                 
@@ -892,8 +901,10 @@ int main ( )
                                                     {
                                                         if(games[o].getPuntos1() > 49)
                                                         {
-                                                            if(games[o].getRight(orFrase,con) == true)
+                                                            games[o].SetPoints1(games[o].getPuntos1()-50);
+                                                            if(games[o].getRight(orFrase,con) != 0)
                                                             {
+                                                                int nreps = games[o].getRight(orFrase, con);
                                                                 bool chck = false;
                                                                 for(int p = 0; p < encFrase.length();p++)
                                                                 {
@@ -920,13 +931,19 @@ int main ( )
                                                                     cout <<"eqb = "<<encFrase<<endl;
                                                                     string newEnc = games[o].revealLetterInPanel(orFrase, encFrase, con);
                                                                     games[o].setEquote(newEnc);
-                                                                    games[o].SetPoints1(games[o].getPuntos1() + 50);
+                                                                    games[o].SetPoints1(games[o].getPuntos1() + (nreps*50));
 
                                                                     bzero(buffer, sizeof(buffer));
                                                                     strcpy(buffer, "+OK. Letra correcta!\n");
                                                                     send(i, buffer, sizeof(buffer), 0);
 
-                                                                    
+                                                                    string acierto = "+OK. La consonante " + con + " aparece " + to_string(nreps) + " veces\n";
+                                                                    cout <<acierto<<endl;
+                                                                    bzero(buffer, sizeof(buffer));
+                                                                    strcpy(buffer, acierto.c_str());
+                                                                    sleep(1);
+                                                                    send(i, buffer, sizeof(buffer), 0);
+
                                                                     string salida = "+OK. El panel es : " + games[o].getEQuote();
 
                                                                     bzero(buffer, sizeof(buffer));
@@ -980,14 +997,24 @@ int main ( )
                                                         games[o].setTurn(2); 
                                                     }
                                                 }
+                                                
+                                                else if(((games[o].getTurn() == 1) && (games[o].getSd2() == i)) || ((games[o].getTurn() == 2) && (games[o].getSd1() == i)))
+                                                {
+                                                    bzero(buffer, sizeof(buffer));
+                                                    strcpy(buffer, "-ERR. No es su turno, espere!\n");
+                                                    send(i, buffer, sizeof(buffer), 0);
+                                                }
+
                                                 else if((games[o].getTurn() == 2) && (games[o].getSd2() == i))
                                                 {                                                   
                                                     if(games[o].isVowel(con) == true)
                                                     {
                                                         if(games[o].getPuntos2() > 49)
                                                         {
-                                                            if(games[o].getRight(orFrase,con) == true)
-                                                            {                                                           
+                                                            games[o].setPoints2(games[o].getPuntos2()-50);
+                                                            if(games[o].getRight(orFrase,con) != 0)
+                                                            {                        
+                                                                int nreps = games[o].getRight(orFrase, con);
                                                                 bool chck = false;
                                                                 for(int p = 0; p < encFrase.length();p++)
                                                                 {
@@ -1011,10 +1038,17 @@ int main ( )
                                                                 {
                                                                     string newEnc = games[o].revealLetterInPanel(orFrase, encFrase, con);
                                                                     games[o].setEquote(newEnc);
-                                                                    games[o].setPoints2(games[o].getPuntos2() + 50);
+                                                                    games[o].setPoints2(games[o].getPuntos2() + (nreps*50));
 
                                                                     bzero(buffer, sizeof(buffer));
                                                                     strcpy(buffer, "+OK. Letra correcta!\n");
+                                                                    send(i, buffer, sizeof(buffer), 0);
+
+                                                                    string acierto = "+OK. La consonante " + con + " aparece " + to_string(nreps) + " veces\n";
+                                                                    cout <<acierto<<endl;
+                                                                    bzero(buffer, sizeof(buffer));
+                                                                    strcpy(buffer, acierto.c_str());
+                                                                    sleep(1);
                                                                     send(i, buffer, sizeof(buffer), 0);
 
                                                                     string salida = "+OK. El panel es : " + games[o].getEQuote();
@@ -1131,6 +1165,14 @@ int main ( )
                                                     deleteGame(idg);
                                                 }
                                             }
+
+                                            else if(((games[o].getTurn() == 1) && (games[o].getSd2() == i)) || ((games[o].getTurn() == 2) && (games[o].getSd1() == i)))
+                                            {
+                                                bzero(buffer, sizeof(buffer));
+                                                strcpy(buffer, "-ERR. No es su turno, espere!\n");
+                                                send(i, buffer, sizeof(buffer), 0);
+                                            }
+
                                             else if((games[o].getTurn() == 2) && (games[o].getSd2() == i))
                                             {
                                                 if(games[o].Resolver(ogQuote, intento) == true)
@@ -1245,6 +1287,7 @@ int main ( )
                                     }
                                 }
                             salirCliente(i,&readfds,&numUsers,arrayUsers);
+                            deleteUser(i);
                         }
                     }
                 }
