@@ -700,7 +700,7 @@ int main ( )
                                                                 games[o].SetPoints1(games[o].getPuntos1() + (nreps *50));
                                                                 
                                                                 string acierto = "+OK. La consonante " + con + " aparece " + to_string(nreps) + " veces\n";
-                                                                cout <<acierto<<endl;
+                                                               
                                                                 bzero(buffer, sizeof(buffer));
                                                                 strcpy(buffer, acierto.c_str());
                                                                 sleep(1);
@@ -928,7 +928,6 @@ int main ( )
                                                                 }
                                                                 else
                                                                 {
-                                                                    cout <<"eqb = "<<encFrase<<endl;
                                                                     string newEnc = games[o].revealLetterInPanel(orFrase, encFrase, con);
                                                                     games[o].setEquote(newEnc);
                                                                     games[o].SetPoints1(games[o].getPuntos1() + (nreps*50));
@@ -938,7 +937,7 @@ int main ( )
                                                                     send(i, buffer, sizeof(buffer), 0);
 
                                                                     string acierto = "+OK. La consonante " + con + " aparece " + to_string(nreps) + " veces\n";
-                                                                    cout <<acierto<<endl;
+                                                                    
                                                                     bzero(buffer, sizeof(buffer));
                                                                     strcpy(buffer, acierto.c_str());
                                                                     sleep(1);
@@ -1045,7 +1044,7 @@ int main ( )
                                                                     send(i, buffer, sizeof(buffer), 0);
 
                                                                     string acierto = "+OK. La consonante " + con + " aparece " + to_string(nreps) + " veces\n";
-                                                                    cout <<acierto<<endl;
+                                                                   
                                                                     bzero(buffer, sizeof(buffer));
                                                                     strcpy(buffer, acierto.c_str());
                                                                     sleep(1);
@@ -1119,7 +1118,6 @@ int main ( )
                             else if((cadenaComienzaCon(buffer, "RESOLVER")) && (getStatus(i,4)))
                             {
                                 //Añadir comprobaciones externas status
-                                cout <<"status = " << checkStatus(i)<<endl;
                                 if(checkStatus(i) == 4)
                                 {
                                     //TODO:
