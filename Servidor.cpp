@@ -153,6 +153,19 @@ void deleteUser(int sd)
     }
 }
 
+int randID()
+{
+    int id = rand() % 2000;
+    for(int i = 0; i < games.size();i++)
+    {
+        if(games[i].getIdJuego() == id)
+        {
+            randID();
+        }
+    }
+    return id;
+}
+
 bool searchGame(int sd)
 {
 
@@ -161,8 +174,8 @@ bool searchGame(int sd)
         Juego newGame;
         string quote = newGame.getRandomLine();
         string equote = newGame.encryptQuote(quote);
-
-        newGame.setIDGame(1);
+        int idg = randID();
+        newGame.setIDGame(idg);
         newGame.setSd1(sd);
         newGame.SetPoints1(0);
         newGame.setPoints2(0);
@@ -176,7 +189,7 @@ bool searchGame(int sd)
         {
             if(users[j].getSd() == sd)
             {
-                users[j].setIdGame(1);
+                users[j].setIdGame(idg);
                 users[j].setStatus(4);
             }
         }
@@ -185,8 +198,9 @@ bool searchGame(int sd)
         return true;
     }
     
-    else if(nGames>0 && nGames<10)
+    else if(nGames<10)
     {
+        int idg = randID();
         for(int i=0; i<games.size(); i++)
         {
             if(games[i].getNumP()==1)
@@ -197,7 +211,7 @@ bool searchGame(int sd)
                 {
                     if(users[j].getSd() == sd)
                     {
-                        users[j].setIdGame(nGames);
+                        users[j].setIdGame(games[i].getIdJuego());
                         users[j].setStatus(4);
                     }
                 }
@@ -209,7 +223,7 @@ bool searchGame(int sd)
         string quote = newGame.getRandomLine();
         string equote = newGame.encryptQuote(quote);
 
-        newGame.setIDGame(nGames);
+        newGame.setIDGame(idg);
         newGame.setSd1(sd);
         newGame.SetPoints1(0);
         newGame.setPoints2(0);
@@ -225,6 +239,7 @@ bool searchGame(int sd)
         {
             if(users[k].getSd() == sd)
             {
+                users[k].setIdGame(idg);
                 users[k].setStatus(4);
             }
         }
@@ -588,7 +603,7 @@ int main ( )
                                         int idg = getUserGame(i);
                                         for(int z = 0; z < games.size(); z++)
                                         {
-                                            if(games[z].getNumP() == 2)
+                                            if(games[z].getNumP() == 2 && ( (games[z].getSd1() == i) || (games[z].getSd2() == i) ))
                                             {
                                                 int j1 = games[z].getSd1();
                                                 int j2 = games[z].getSd2();
@@ -611,6 +626,7 @@ int main ( )
                                                 strcpy(buffer, salida.c_str()); 
                                                 send(j1, buffer, sizeof(buffer), 0);
                                                 send(j2, buffer, sizeof(buffer), 0);
+                                               
 
                                             }
                                         }
@@ -660,186 +676,195 @@ int main ( )
                                     {
                                         for(int o = 0 ; o<games.size() ; o++)
                                         {
-                                            if(games[o].getIdJuego() == idg)
+                                            if( o != games.size())
                                             {
-                                                string encFrase = games[o].getEQuote();
-                                                string orFrase = games[o].getQuote();
-
-                                                if((games[o].getTurn() == 1) && (games[o].getSd1() == i))
+                                                if(games[o].getIdJuego() == idg)
                                                 {
-                                                    
-                                                    if(games[o].isVowel(con) == false)
+                                                    string encFrase = games[o].getEQuote();
+                                                    string orFrase = games[o].getQuote();
+
+                                                    if((games[o].getTurn() == 1) && (games[o].getSd1() == i))
                                                     {
-                                                        if(games[o].getRight(orFrase,con) != 0)
+                                                        
+                                                        if(games[o].isVowel(con) == false)
                                                         {
-                                                            int nreps = games[o].getRight(orFrase,con);
-                                                            bool chck = false;
-                                                            for(int p = 0; p < encFrase.length();p++)
+                                                            if(games[o].getRight(orFrase,con) != 0)
                                                             {
-                                                                if(encFrase[p] == con[0])
+                                                                int nreps = games[o].getRight(orFrase,con);
+                                                                bool chck = false;
+                                                                for(int p = 0; p < encFrase.length();p++)
                                                                 {
-                                                                    chck = true;
+                                                                    if(encFrase[p] == con[0])
+                                                                    {
+                                                                        chck = true;
+                                                                    }
+                                                                }
+                                                                
+                                                                if(chck == true)
+                                                                {
+                                                                    
+                                                                    bzero(buffer, sizeof(buffer));
+                                                                    strcpy(buffer, "-ERR. La letra ya ha sido revelada. Pierde turno!\n");
+                                                                    send(i, buffer, sizeof(buffer), 0);
+                                                                    bzero(buffer, sizeof(buffer));
+                                                                    strcpy(buffer, "+OK. Tu turno\n");
+                                                                    send(games[o].getSd2(), buffer, sizeof(buffer), 0);
+                                                                    games[o].setTurn(2);
+                                                                }
+                                                                else
+                                                                {
+                                                                    string newEnc = games[o].revealLetterInPanel(orFrase, encFrase, con);
+                                                                    games[o].setEquote(newEnc);
+                                                                    games[o].SetPoints1(games[o].getPuntos1() + (nreps *50));
+                                                                    
+                                                                    string acierto = "+OK. La consonante " + con + " aparece " + to_string(nreps) + " veces\n";
+                                                                
+                                                                    bzero(buffer, sizeof(buffer));
+                                                                    strcpy(buffer, acierto.c_str());
+                                                                    sleep(1);
+                                                                    send(i, buffer, sizeof(buffer), 0);
+
+                                                                    string salida = "+OK. El panel es : " + games[o].getEQuote();
+                                                                    
+                                                                    bzero(buffer, sizeof(buffer));
+                                                                    strcpy(buffer, salida.c_str()); 
+                                                                    sleep(1);
+                                                                    send(i, buffer, sizeof(buffer), 0);
+                                                                    send(games[o].getSd2(), buffer, sizeof(buffer), 0);
+                                                                    
+                                                                    if(games[o].isComplete(games[o].getQuote(), games[o].getEQuote()))
+                                                                    {
+                                                                        bzero(buffer, sizeof(buffer));
+                                                                        strcpy(buffer, "+Ok. Has ganado!!\n");
+                                                                        send(i, buffer, sizeof(buffer), 0);
+                                                                        setStatus(games[o].getSd1(), 2);
+                                                                        bzero(buffer, sizeof(buffer));
+                                                                        strcpy(buffer, "-Err. Has perdido...\n");
+                                                                        send(games[o].getSd2(), buffer, sizeof(buffer), 0);
+                                                                        setStatus(games[o].getSd2(), 2);
+                                                                        deleteGame(idg);
+                                                                    }
                                                                 }
                                                             }
-                                                            
-                                                            if(chck == true)
+                                                            else
                                                             {
-                                                                
                                                                 bzero(buffer, sizeof(buffer));
-                                                                strcpy(buffer, "-ERR. La letra ya ha sido revelada. Pierde turno!\n");
+                                                                strcpy(buffer, "-ERR. La letra no esta en el refran. Pierde turno!\n");
                                                                 send(i, buffer, sizeof(buffer), 0);
+
                                                                 bzero(buffer, sizeof(buffer));
                                                                 strcpy(buffer, "+OK. Tu turno\n");
                                                                 send(games[o].getSd2(), buffer, sizeof(buffer), 0);
                                                                 games[o].setTurn(2);
                                                             }
-                                                            else
-                                                            {
-                                                                string newEnc = games[o].revealLetterInPanel(orFrase, encFrase, con);
-                                                                games[o].setEquote(newEnc);
-                                                                games[o].SetPoints1(games[o].getPuntos1() + (nreps *50));
-                                                                
-                                                                string acierto = "+OK. La consonante " + con + " aparece " + to_string(nreps) + " veces\n";
-                                                               
-                                                                bzero(buffer, sizeof(buffer));
-                                                                strcpy(buffer, acierto.c_str());
-                                                                sleep(1);
-                                                                send(i, buffer, sizeof(buffer), 0);
-
-                                                                string salida = "+OK. El panel es : " + games[o].getEQuote();
-                                                                
-                                                                bzero(buffer, sizeof(buffer));
-                                                                strcpy(buffer, salida.c_str()); 
-                                                                sleep(1);
-                                                                send(i, buffer, sizeof(buffer), 0);
-                                                                send(games[o].getSd2(), buffer, sizeof(buffer), 0);
-                                                                
-                                                                if(games[o].isComplete(games[o].getQuote(), games[o].getEQuote()))
-                                                                {
-                                                                    bzero(buffer, sizeof(buffer));
-                                                                    strcpy(buffer, "+Ok. Has ganado!!\n");
-                                                                    send(i, buffer, sizeof(buffer), 0);
-                                                                    setStatus(games[o].getSd1(), 2);
-                                                                    bzero(buffer, sizeof(buffer));
-                                                                    strcpy(buffer, "-Err. Has perdido...\n");
-                                                                    send(games[o].getSd2(), buffer, sizeof(buffer), 0);
-                                                                    setStatus(games[o].getSd2(), 2);
-                                                                    deleteGame(idg);
-                                                                }
-                                                            }
                                                         }
                                                         else
                                                         {
                                                             bzero(buffer, sizeof(buffer));
-                                                            strcpy(buffer, "-ERR. La letra no esta en el refran. Pierde turno!\n");
+                                                            strcpy(buffer, "-ERR. La letra no es una consonante. Pierde turno!\n");
                                                             send(i, buffer, sizeof(buffer), 0);
 
                                                             bzero(buffer, sizeof(buffer));
                                                             strcpy(buffer, "+OK. Tu turno\n");
                                                             send(games[o].getSd2(), buffer, sizeof(buffer), 0);
-                                                            games[o].setTurn(2);
+                                                            games[o].setTurn(2); 
                                                         }
                                                     }
-                                                    else
+                                                    else if(((games[o].getTurn() == 1) && (games[o].getSd2() == i)) || ((games[o].getTurn() == 2) && (games[o].getSd1() == i)))
                                                     {
                                                         bzero(buffer, sizeof(buffer));
-                                                        strcpy(buffer, "-ERR. La letra no es una consonante. Pierde turno!\n");
+                                                        strcpy(buffer, "-ERR. No es su turno, espere!\n");
                                                         send(i, buffer, sizeof(buffer), 0);
-
-                                                        bzero(buffer, sizeof(buffer));
-                                                        strcpy(buffer, "+OK. Tu turno\n");
-                                                        send(games[o].getSd2(), buffer, sizeof(buffer), 0);
-                                                        games[o].setTurn(2); 
                                                     }
-                                                }
-                                                else if(((games[o].getTurn() == 1) && (games[o].getSd2() == i)) || ((games[o].getTurn() == 2) && (games[o].getSd1() == i)))
-                                                {
-                                                    bzero(buffer, sizeof(buffer));
-                                                    strcpy(buffer, "-ERR. No es su turno, espere!\n");
-                                                    send(i, buffer, sizeof(buffer), 0);
-                                                }
-                                                else if((games[o].getTurn() == 2) && (games[o].getSd2() == i))
-                                                {                                                   
-                                                    if(games[o].isVowel(con) == false)
-                                                    {
-                                                        if(games[o].getRight(orFrase,con) != 0)
-                                                        {                                     
-                                                            int nreps = games[o].getRight(orFrase, con);                       
-                                                            bool chck = false;
-                                                            for(int p = 0; p < encFrase.length();p++)
-                                                            {
-                                                                if(encFrase[p] == con[0])
+                                                    else if((games[o].getTurn() == 2) && (games[o].getSd2() == i))
+                                                    {                                                   
+                                                        if(games[o].isVowel(con) == false)
+                                                        {
+                                                            if(games[o].getRight(orFrase,con) != 0)
+                                                            {                                     
+                                                                int nreps = games[o].getRight(orFrase, con);                       
+                                                                bool chck = false;
+                                                                for(int p = 0; p < encFrase.length();p++)
                                                                 {
-                                                                    chck = true;
+                                                                    if(encFrase[p] == con[0])
+                                                                    {
+                                                                        chck = true;
+                                                                    }
+                                                                }
+
+                                                                if(chck == true)
+                                                                {
+                                                                    bzero(buffer, sizeof(buffer));
+                                                                    strcpy(buffer, "-ERR. La letra ya ha sido revelada. Pierde turno!\n");
+                                                                    send(i, buffer, sizeof(buffer), 0);
+                                                                    bzero(buffer, sizeof(buffer));
+                                                                    strcpy(buffer, "+OK. Tu turno\n");
+                                                                    send(games[o].getSd1(), buffer, sizeof(buffer), 0);
+                                                                    games[o].setTurn(1);
+                                                                }
+                                                                else
+                                                                {
+                                                                    string newEnc = games[o].revealLetterInPanel(orFrase, encFrase, con);
+                                                                    games[o].setEquote(newEnc);
+                                                                    games[o].setPoints2(games[o].getPuntos2() + (nreps*50));
+
+                                                                    bzero(buffer, sizeof(buffer));
+                                                                    strcpy(buffer, "+OK. Letra correcta!\n");
+                                                                    send(i, buffer, sizeof(buffer), 0);
+
+                                                                    string acierto = "+OK. La consonante " + con + " aparece " + to_string(nreps) + " veces\n";
+                                                                        
+                                                                    bzero(buffer, sizeof(buffer));
+                                                                    strcpy(buffer, acierto.c_str());
+                                                                    sleep(1);
+                                                                    send(i, buffer, sizeof(buffer), 0);
+                                                                    
+                                                                    string salida = "+OK. El panel es : " + games[o].getEQuote();
+
+                                                                    bzero(buffer, sizeof(buffer));
+                                                                    strcpy(buffer, salida.c_str()); 
+                                                                    sleep(1);
+                                                                    send(i, buffer, sizeof(buffer), 0);
+                                                                    
+                                                                    send(games[o].getSd1(), buffer, sizeof(buffer), 0);
+                                                                    
+                                                                    if(games[o].isComplete(games[o].getQuote(), games[o].getEQuote()))
+                                                                    {
+                                                                        bzero(buffer, sizeof(buffer));
+                                                                        strcpy(buffer, "+Ok. Has ganado!!\n");
+                                                                        send(i, buffer, sizeof(buffer), 0);
+                                                                        setStatus(games[o].getSd1(), 2);
+                                                                        bzero(buffer, sizeof(buffer));
+                                                                        strcpy(buffer, "-Err. Has perdido...\n");
+                                                                        send(games[o].getSd1(), buffer, sizeof(buffer), 0);
+                                                                        setStatus(games[o].getSd2(), 2);
+                                                                        deleteGame(idg);
+                                                                    }
                                                                 }
                                                             }
-
-                                                            if(chck == true)
+                                                            else
                                                             {
                                                                 bzero(buffer, sizeof(buffer));
-                                                                strcpy(buffer, "-ERR. La letra ya ha sido revelada. Pierde turno!\n");
+                                                                strcpy(buffer, "-ERR. La letra no esta en el refran. Pierde turno!\n");
                                                                 send(i, buffer, sizeof(buffer), 0);
+
                                                                 bzero(buffer, sizeof(buffer));
                                                                 strcpy(buffer, "+OK. Tu turno\n");
                                                                 send(games[o].getSd1(), buffer, sizeof(buffer), 0);
                                                                 games[o].setTurn(1);
                                                             }
-                                                            else
-                                                            {
-                                                                string newEnc = games[o].revealLetterInPanel(orFrase, encFrase, con);
-                                                                games[o].setEquote(newEnc);
-                                                                games[o].setPoints2(games[o].getPuntos2() + (nreps*50));
-
-                                                                bzero(buffer, sizeof(buffer));
-                                                                strcpy(buffer, "+OK. Letra correcta!\n");
-                                                                send(i, buffer, sizeof(buffer), 0);
-
-                                                                
-                                                                string salida = "+OK. El panel es : " + games[o].getEQuote();
-
-                                                                bzero(buffer, sizeof(buffer));
-                                                                strcpy(buffer, salida.c_str()); 
-                                                                sleep(1);
-                                                                send(i, buffer, sizeof(buffer), 0);
-                                                                
-                                                                send(games[o].getSd1(), buffer, sizeof(buffer), 0);
-                                                                
-                                                                if(games[o].isComplete(games[o].getQuote(), games[o].getEQuote()))
-                                                                {
-                                                                    bzero(buffer, sizeof(buffer));
-                                                                    strcpy(buffer, "+Ok. Has ganado!!\n");
-                                                                    send(i, buffer, sizeof(buffer), 0);
-                                                                    setStatus(games[o].getSd1(), 2);
-                                                                    bzero(buffer, sizeof(buffer));
-                                                                    strcpy(buffer, "-Err. Has perdido...\n");
-                                                                    send(games[o].getSd1(), buffer, sizeof(buffer), 0);
-                                                                    setStatus(games[o].getSd2(), 2);
-                                                                    deleteGame(idg);
-                                                                }
-                                                            }
                                                         }
                                                         else
                                                         {
                                                             bzero(buffer, sizeof(buffer));
-                                                            strcpy(buffer, "-ERR. La letra no esta en el refran. Pierde turno!\n");
+                                                            strcpy(buffer, "-ERR. La letra no es una consonante. Pierde turno!\n");
                                                             send(i, buffer, sizeof(buffer), 0);
 
                                                             bzero(buffer, sizeof(buffer));
                                                             strcpy(buffer, "+OK. Tu turno\n");
                                                             send(games[o].getSd1(), buffer, sizeof(buffer), 0);
-                                                            games[o].setTurn(1);
+                                                            games[o].setTurn(1); 
                                                         }
-                                                    }
-                                                    else
-                                                    {
-                                                        bzero(buffer, sizeof(buffer));
-                                                        strcpy(buffer, "-ERR. La letra no es una consonante. Pierde turno!\n");
-                                                        send(i, buffer, sizeof(buffer), 0);
-
-                                                        bzero(buffer, sizeof(buffer));
-                                                        strcpy(buffer, "+OK. Tu turno\n");
-                                                        send(games[o].getSd1(), buffer, sizeof(buffer), 0);
-                                                        games[o].setTurn(1); 
                                                     }
                                                 }
                                             }
@@ -889,212 +914,221 @@ int main ( )
                                     {
                                         for(int o = 0 ; o<games.size() ; o++)
                                         {
-                                            if(games[o].getIdJuego() == idg)
+                                            if(o != games.size())
                                             {
-                                                string encFrase = games[o].getEQuote();
-                                                string orFrase = games[o].getQuote();
-
-                                                if((games[o].getTurn() == 1) && (games[o].getSd1() == i))
+                                                if(games[o].getIdJuego() == idg)
                                                 {
-                                                    
-                                                    if(games[o].isVowel(con) == true)
-                                                    {
-                                                        if(games[o].getPuntos1() > 49)
-                                                        {
-                                                            games[o].SetPoints1(games[o].getPuntos1()-50);
-                                                            if(games[o].getRight(orFrase,con) != 0)
-                                                            {
-                                                                int nreps = games[o].getRight(orFrase, con);
-                                                                bool chck = false;
-                                                                for(int p = 0; p < encFrase.length();p++)
-                                                                {
-                                                                    if(encFrase[p] == con[0])
-                                                                    {
+                                                    string encFrase = games[o].getEQuote();
+                                                    string orFrase = games[o].getQuote();
 
-                                                                        chck = true;
+                                                    if((games[o].getTurn() == 1) && (games[o].getSd1() == i))
+                                                    {
+                                                        
+                                                        if(games[o].isVowel(con) == true)
+                                                        {
+                                                            if(games[o].getPuntos1() > 49)
+                                                            {
+                                                                games[o].SetPoints1(games[o].getPuntos1()-50);
+                                                                if(games[o].getRight(orFrase,con) != 0)
+                                                                {
+                                                                    int nreps = games[o].getRight(orFrase, con);
+                                                                    bool chck = false;
+                                                                    for(int p = 0; p < encFrase.length();p++)
+                                                                    {
+                                                                        if(encFrase[p] == con[0])
+                                                                        {
+
+                                                                            chck = true;
+                                                                        }
+                                                                    }
+                                                                    
+                                                                    if(chck == true)
+                                                                    {
+                                                                        
+                                                                        bzero(buffer, sizeof(buffer));
+                                                                        strcpy(buffer, "-ERR. La letra ya ha sido revelada. Pierde turno!\n");
+                                                                        send(i, buffer, sizeof(buffer), 0);
+                                                                        bzero(buffer, sizeof(buffer));
+                                                                        strcpy(buffer, "+OK. Tu turno\n");
+                                                                        send(games[o].getSd2(), buffer, sizeof(buffer), 0);
+                                                                        games[o].setTurn(2);
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        string newEnc = games[o].revealLetterInPanel(orFrase, encFrase, con);
+                                                                        games[o].setEquote(newEnc);
+                                                                        games[o].SetPoints1(games[o].getPuntos1() + (nreps*50));
+
+                                                                        bzero(buffer, sizeof(buffer));
+                                                                        strcpy(buffer, "+OK. Letra correcta!\n");
+                                                                        send(i, buffer, sizeof(buffer), 0);
+
+                                                                        string acierto = "+OK. La consonante " + con + " aparece " + to_string(nreps) + " veces\n";
+                                                                        
+                                                                        bzero(buffer, sizeof(buffer));
+                                                                        strcpy(buffer, acierto.c_str());
+                                                                        sleep(1);
+                                                                        send(i, buffer, sizeof(buffer), 0);
+
+                                                                        string salida = "+OK. El panel es : " + games[o].getEQuote();
+
+                                                                        bzero(buffer, sizeof(buffer));
+                                                                        strcpy(buffer, salida.c_str()); 
+                                                                        sleep(1);
+                                                                        send(i, buffer, sizeof(buffer), 0);
+                                                                        send(games[o].getSd2(), buffer, sizeof(buffer), 0);
+                                                                        
+                                                                        if(games[o].isComplete(games[o].getQuote(), games[o].getEQuote()))
+                                                                        {
+                                                                            bzero(buffer, sizeof(buffer));
+                                                                            strcpy(buffer, "+Ok. Has ganado!!\n");
+                                                                            send(i, buffer, sizeof(buffer), 0);
+                                                                            setStatus(games[o].getSd1(), 2);
+                                                                            bzero(buffer, sizeof(buffer));
+                                                                            strcpy(buffer, "-Err. Has perdido...\n");
+                                                                            send(games[o].getSd2(), buffer, sizeof(buffer), 0);
+                                                                            setStatus(games[o].getSd2(), 2);
+                                                                            deleteGame(idg);
+                                                                        }
                                                                     }
                                                                 }
-                                                                
-                                                                if(chck == true)
+                                                                else
                                                                 {
-                                                                    
                                                                     bzero(buffer, sizeof(buffer));
-                                                                    strcpy(buffer, "-ERR. La letra ya ha sido revelada. Pierde turno!\n");
+                                                                    strcpy(buffer, "-ERR. La letra no esta en el refran. Pierde turno!\n");
                                                                     send(i, buffer, sizeof(buffer), 0);
+
                                                                     bzero(buffer, sizeof(buffer));
                                                                     strcpy(buffer, "+OK. Tu turno\n");
                                                                     send(games[o].getSd2(), buffer, sizeof(buffer), 0);
                                                                     games[o].setTurn(2);
                                                                 }
-                                                                else
-                                                                {
-                                                                    string newEnc = games[o].revealLetterInPanel(orFrase, encFrase, con);
-                                                                    games[o].setEquote(newEnc);
-                                                                    games[o].SetPoints1(games[o].getPuntos1() + (nreps*50));
-
-                                                                    bzero(buffer, sizeof(buffer));
-                                                                    strcpy(buffer, "+OK. Letra correcta!\n");
-                                                                    send(i, buffer, sizeof(buffer), 0);
-
-                                                                    string acierto = "+OK. La consonante " + con + " aparece " + to_string(nreps) + " veces\n";
-                                                                    
-                                                                    bzero(buffer, sizeof(buffer));
-                                                                    strcpy(buffer, acierto.c_str());
-                                                                    sleep(1);
-                                                                    send(i, buffer, sizeof(buffer), 0);
-
-                                                                    string salida = "+OK. El panel es : " + games[o].getEQuote();
-
-                                                                    bzero(buffer, sizeof(buffer));
-                                                                    strcpy(buffer, salida.c_str()); 
-                                                                    sleep(1);
-                                                                    send(i, buffer, sizeof(buffer), 0);
-                                                                    send(games[o].getSd2(), buffer, sizeof(buffer), 0);
-                                                                    
-                                                                    if(games[o].isComplete(games[o].getQuote(), games[o].getEQuote()))
-                                                                    {
-                                                                        bzero(buffer, sizeof(buffer));
-                                                                        strcpy(buffer, "+Ok. Has ganado!!\n");
-                                                                        send(i, buffer, sizeof(buffer), 0);
-                                                                        setStatus(games[o].getSd1(), 2);
-                                                                        bzero(buffer, sizeof(buffer));
-                                                                        strcpy(buffer, "-Err. Has perdido...\n");
-                                                                        send(games[o].getSd2(), buffer, sizeof(buffer), 0);
-                                                                        setStatus(games[o].getSd2(), 2);
-                                                                        deleteGame(idg);
-                                                                    }
-                                                                }
                                                             }
                                                             else
                                                             {
                                                                 bzero(buffer, sizeof(buffer));
-                                                                strcpy(buffer, "-ERR. La letra no esta en el refran. Pierde turno!\n");
+                                                                strcpy(buffer, "-ERR. No tiene puntos suficientes!\n");
                                                                 send(i, buffer, sizeof(buffer), 0);
-
-                                                                bzero(buffer, sizeof(buffer));
-                                                                strcpy(buffer, "+OK. Tu turno\n");
-                                                                send(games[o].getSd2(), buffer, sizeof(buffer), 0);
-                                                                games[o].setTurn(2);
                                                             }
                                                         }
                                                         else
                                                         {
                                                             bzero(buffer, sizeof(buffer));
-                                                            strcpy(buffer, "-ERR. No tiene puntos suficientes!\n");
+                                                            strcpy(buffer, "-ERR. La letra no es una vocal. Pierde turno!\n");
                                                             send(i, buffer, sizeof(buffer), 0);
+
+                                                            bzero(buffer, sizeof(buffer));
+                                                            strcpy(buffer, "+OK. Tu turno\n");
+                                                            send(games[o].getSd2(), buffer, sizeof(buffer), 0);
+                                                            games[o].setTurn(2); 
                                                         }
                                                     }
-                                                    else
+                                                    
+                                                    else if(((games[o].getTurn() == 1) && (games[o].getSd2() == i)) || ((games[o].getTurn() == 2) && (games[o].getSd1() == i)))
                                                     {
                                                         bzero(buffer, sizeof(buffer));
-                                                        strcpy(buffer, "-ERR. La letra no es una vocal. Pierde turno!\n");
+                                                        strcpy(buffer, "-ERR. No es su turno, espere!\n");
                                                         send(i, buffer, sizeof(buffer), 0);
-
-                                                        bzero(buffer, sizeof(buffer));
-                                                        strcpy(buffer, "+OK. Tu turno\n");
-                                                        send(games[o].getSd2(), buffer, sizeof(buffer), 0);
-                                                        games[o].setTurn(2); 
                                                     }
-                                                }
-                                                
-                                                else if(((games[o].getTurn() == 1) && (games[o].getSd2() == i)) || ((games[o].getTurn() == 2) && (games[o].getSd1() == i)))
-                                                {
-                                                    bzero(buffer, sizeof(buffer));
-                                                    strcpy(buffer, "-ERR. No es su turno, espere!\n");
-                                                    send(i, buffer, sizeof(buffer), 0);
-                                                }
 
-                                                else if((games[o].getTurn() == 2) && (games[o].getSd2() == i))
-                                                {                                                   
-                                                    if(games[o].isVowel(con) == true)
-                                                    {
-                                                        if(games[o].getPuntos2() > 49)
+                                                    else if((games[o].getTurn() == 2) && (games[o].getSd2() == i))
+                                                    {                                                   
+                                                        if(games[o].isVowel(con) == true)
                                                         {
-                                                            games[o].setPoints2(games[o].getPuntos2()-50);
-                                                            if(games[o].getRight(orFrase,con) != 0)
-                                                            {                        
-                                                                int nreps = games[o].getRight(orFrase, con);
-                                                                bool chck = false;
-                                                                for(int p = 0; p < encFrase.length();p++)
-                                                                {
-                                                                    if(encFrase[p] == con[0])
+                                                            if(games[o].getPuntos2() > 49)
+                                                            {
+                                                                games[o].setPoints2(games[o].getPuntos2()-50);
+                                                                if(games[o].getRight(orFrase,con) != 0)
+                                                                {                        
+                                                                    int nreps = games[o].getRight(orFrase, con);
+                                                                    bool chck = false;
+                                                                    for(int p = 0; p < encFrase.length();p++)
                                                                     {
-                                                                        chck = true;
+                                                                        if(encFrase[p] == con[0])
+                                                                        {
+                                                                            chck = true;
+                                                                        }
+                                                                    }
+
+                                                                    if(chck == true)
+                                                                    {
+                                                                        bzero(buffer, sizeof(buffer));
+                                                                        strcpy(buffer, "-ERR. La letra ya ha sido revelada. Pierde turno!\n");
+                                                                        send(i, buffer, sizeof(buffer), 0);
+                                                                        bzero(buffer, sizeof(buffer));
+                                                                        strcpy(buffer, "+OK. Tu turno\n");
+                                                                        send(games[o].getSd1(), buffer, sizeof(buffer), 0);
+                                                                        games[o].setTurn(1);
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        string newEnc = games[o].revealLetterInPanel(orFrase, encFrase, con);
+                                                                        games[o].setEquote(newEnc);
+                                                                        games[o].setPoints2(games[o].getPuntos2() + (nreps*50));
+
+                                                                        bzero(buffer, sizeof(buffer));
+                                                                        strcpy(buffer, "+OK. Letra correcta!\n");
+                                                                        send(i, buffer, sizeof(buffer), 0);
+
+                                                                        string acierto = "+OK. La consonante " + con + " aparece " + to_string(nreps) + " veces\n";
+                                                                    
+                                                                        bzero(buffer, sizeof(buffer));
+                                                                        strcpy(buffer, acierto.c_str());
+                                                                        sleep(1);
+                                                                        send(i, buffer, sizeof(buffer), 0);
+
+                                                                        string salida = "+OK. El panel es : " + games[o].getEQuote();
+
+                                                                        bzero(buffer, sizeof(buffer));
+                                                                        strcpy(buffer, salida.c_str()); 
+                                                                        sleep(1);
+                                                                        send(i, buffer, sizeof(buffer), 0);
+                                                                        send(games[o].getSd1(), buffer, sizeof(buffer), 0);
+                                                                        
+                                                                        if(games[o].isComplete(games[o].getQuote(), games[o].getEQuote()))
+                                                                        {
+                                                                            bzero(buffer, sizeof(buffer));
+                                                                            strcpy(buffer, "+Ok. Has ganado!!\n");
+                                                                            send(i, buffer, sizeof(buffer), 0);
+                                                                            setStatus(games[o].getSd1(), 2);
+                                                                            bzero(buffer, sizeof(buffer));
+                                                                            strcpy(buffer, "-Err. Has perdido...\n");
+                                                                            send(games[o].getSd1(), buffer, sizeof(buffer), 0);
+                                                                            setStatus(games[o].getSd2(), 2);
+                                                                            deleteGame(idg);
+                                                                        }
                                                                     }
                                                                 }
-
-                                                                if(chck == true)
+                                                                else
                                                                 {
                                                                     bzero(buffer, sizeof(buffer));
-                                                                    strcpy(buffer, "-ERR. La letra ya ha sido revelada. Pierde turno!\n");
+                                                                    strcpy(buffer, "-ERR. La letra no esta en el refran. Pierde turno!\n");
                                                                     send(i, buffer, sizeof(buffer), 0);
+
                                                                     bzero(buffer, sizeof(buffer));
                                                                     strcpy(buffer, "+OK. Tu turno\n");
                                                                     send(games[o].getSd1(), buffer, sizeof(buffer), 0);
                                                                     games[o].setTurn(1);
                                                                 }
-                                                                else
-                                                                {
-                                                                    string newEnc = games[o].revealLetterInPanel(orFrase, encFrase, con);
-                                                                    games[o].setEquote(newEnc);
-                                                                    games[o].setPoints2(games[o].getPuntos2() + (nreps*50));
-
-                                                                    bzero(buffer, sizeof(buffer));
-                                                                    strcpy(buffer, "+OK. Letra correcta!\n");
-                                                                    send(i, buffer, sizeof(buffer), 0);
-
-                                                                    string acierto = "+OK. La consonante " + con + " aparece " + to_string(nreps) + " veces\n";
-                                                                   
-                                                                    bzero(buffer, sizeof(buffer));
-                                                                    strcpy(buffer, acierto.c_str());
-                                                                    sleep(1);
-                                                                    send(i, buffer, sizeof(buffer), 0);
-
-                                                                    string salida = "+OK. El panel es : " + games[o].getEQuote();
-
-                                                                    bzero(buffer, sizeof(buffer));
-                                                                    strcpy(buffer, salida.c_str()); 
-                                                                    sleep(1);
-                                                                    send(i, buffer, sizeof(buffer), 0);
-                                                                    send(games[o].getSd1(), buffer, sizeof(buffer), 0);
-                                                                    
-                                                                    if(games[o].isComplete(games[o].getQuote(), games[o].getEQuote()))
-                                                                    {
-                                                                        bzero(buffer, sizeof(buffer));
-                                                                        strcpy(buffer, "+Ok. Has ganado!!\n");
-                                                                        send(i, buffer, sizeof(buffer), 0);
-                                                                        setStatus(games[o].getSd1(), 2);
-                                                                        bzero(buffer, sizeof(buffer));
-                                                                        strcpy(buffer, "-Err. Has perdido...\n");
-                                                                        send(games[o].getSd1(), buffer, sizeof(buffer), 0);
-                                                                        setStatus(games[o].getSd2(), 2);
-                                                                        deleteGame(idg);
-                                                                    }
-                                                                }
                                                             }
                                                             else
                                                             {
                                                                 bzero(buffer, sizeof(buffer));
-                                                                strcpy(buffer, "-ERR. La letra no esta en el refran. Pierde turno!\n");
+                                                                strcpy(buffer, "-ERR. No tiene puntos suficientes!\n");
                                                                 send(i, buffer, sizeof(buffer), 0);
-
-                                                                bzero(buffer, sizeof(buffer));
-                                                                strcpy(buffer, "+OK. Tu turno\n");
-                                                                send(games[o].getSd1(), buffer, sizeof(buffer), 0);
-                                                                games[o].setTurn(1);
                                                             }
                                                         }
-                                                    }
-                                                    else
-                                                    {
-                                                        bzero(buffer, sizeof(buffer));
-                                                        strcpy(buffer, "-ERR. La letra no es una vocal. Pierde turno!\n");
-                                                        send(i, buffer, sizeof(buffer), 0);
+                                                        else
+                                                        {
+                                                            bzero(buffer, sizeof(buffer));
+                                                            strcpy(buffer, "-ERR. La letra no es una vocal. Pierde turno!\n");
+                                                            send(i, buffer, sizeof(buffer), 0);
 
-                                                        bzero(buffer, sizeof(buffer));
-                                                        strcpy(buffer, "+OK. Tu turno\n");
-                                                        send(games[o].getSd1(), buffer, sizeof(buffer), 0);
-                                                        games[o].setTurn(1); 
+                                                            bzero(buffer, sizeof(buffer));
+                                                            strcpy(buffer, "+OK. Tu turno\n");
+                                                            send(games[o].getSd1(), buffer, sizeof(buffer), 0);
+                                                            games[o].setTurn(1); 
+                                                        }
                                                     }
                                                 }
                                             }
@@ -1117,7 +1151,13 @@ int main ( )
 
                             else if((cadenaComienzaCon(buffer, "RESOLVER")) && (getStatus(i,4)))
                             {
-                                //Añadir comprobaciones externas status
+                                if (cadenaComienzaCon(buffer, "RESOLVER\n"))
+                                {
+                                    bzero(buffer, sizeof(buffer));
+                                    strcpy(buffer, "–ERR. Error en la validación\n");
+                                    send(i, buffer, sizeof(buffer), 0);
+                                }
+
                                 if(checkStatus(i) == 4)
                                 {
                                     //TODO:
@@ -1129,77 +1169,86 @@ int main ( )
 
                                     for(int o = 0; o < games.size(); o++)
                                     {
-                                        if(games[o].getIdJuego() == idg)
+                                        if(o != games.size())
                                         {
-                                            string ogQuote = games[o].getQuote();
-                                            ogQuote.erase(ogQuote.length()-1, ogQuote.length());
-                                           
-                                            if((games[o].getTurn() == 1) && (games[o].getSd1() == i))
+                                            if(games[o].getIdJuego() == idg)
                                             {
-                                                if(games[o].Resolver(ogQuote, intento) == true)
+                                                string ogQuote = games[o].getQuote();
+                                                ogQuote.erase(ogQuote.length()-1, ogQuote.length());
+                                            
+                                                if((games[o].getTurn() == 1) && (games[o].getSd1() == i))
                                                 {
-                                                    bzero(buffer, sizeof(buffer));
-                                                    strcpy(buffer, "+Ok. Has ganado!!\n");
-                                                    send(i, buffer, sizeof(buffer), 0);
-                                                    setStatus(games[o].getSd1(), 2);
+                                                    if(games[o].Resolver(ogQuote, intento) == true)
+                                                    {
+                                                        bzero(buffer, sizeof(buffer));
+                                                        strcpy(buffer, "+Ok. Has ganado!!\n");
+                                                        send(i, buffer, sizeof(buffer), 0);
+                                                        setStatus(games[o].getSd1(), 2);
 
-                                                    bzero(buffer, sizeof(buffer));
-                                                    strcpy(buffer, "-Err. Has perdido...\n");
-                                                    send(games[o].getSd2(), buffer, sizeof(buffer), 0);
-                                                    setStatus(games[o].getSd2(), 2);     
-                                                    deleteGame(idg);
+                                                        bzero(buffer, sizeof(buffer));
+                                                        strcpy(buffer, "-Err. Has perdido...\n");
+                                                        send(games[o].getSd2(), buffer, sizeof(buffer), 0);
+                                                        setStatus(games[o].getSd2(), 2);     
+                                                        deleteGame(idg);
+                                                    }
+                                                    else
+                                                    {
+                                                        bzero(buffer, sizeof(buffer));
+                                                        strcpy(buffer, "-Err. Has perdido...\n");
+                                                        send(i, buffer, sizeof(buffer), 0);
+                                                        setStatus(i, 2);
+
+                                                        bzero(buffer, sizeof(buffer));
+                                                        strcpy(buffer, "+Ok. Has ganado!!\n");
+                                                        send(games[o].getSd2(), buffer, sizeof(buffer), 0);
+                                                        setStatus(games[o].getSd2(), 2); 
+                                                        deleteGame(idg);
+                                                    }
                                                 }
-                                                else
+
+                                                else if(((games[o].getTurn() == 1) && (games[o].getSd2() == i)) || ((games[o].getTurn() == 2) && (games[o].getSd1() == i)))
                                                 {
                                                     bzero(buffer, sizeof(buffer));
-                                                    strcpy(buffer, "-Err. Has perdido...\n");
+                                                    strcpy(buffer, "-ERR. No es su turno, espere!\n");
                                                     send(i, buffer, sizeof(buffer), 0);
-                                                    setStatus(i, 2);
+                                                }
 
-                                                    bzero(buffer, sizeof(buffer));
-                                                    strcpy(buffer, "+Ok. Has ganado!!\n");
-                                                    send(games[o].getSd2(), buffer, sizeof(buffer), 0);
-                                                    setStatus(games[o].getSd2(), 2); 
-                                                    deleteGame(idg);
+                                                else if((games[o].getTurn() == 2) && (games[o].getSd2() == i))
+                                                {
+                                                    if(games[o].Resolver(ogQuote, intento) == true)
+                                                    {
+                                                        bzero(buffer, sizeof(buffer));
+                                                        strcpy(buffer, "+Ok. Has ganado!!\n");
+                                                        send(i, buffer, sizeof(buffer), 0);
+                                                        setStatus(i, 2);
+
+                                                        bzero(buffer, sizeof(buffer));
+                                                        strcpy(buffer, "-Err. Has perdido...\n");
+                                                        send(games[o].getSd1(), buffer, sizeof(buffer), 0);
+                                                        setStatus(games[o].getSd1(), 2);
+                                                        deleteGame(idg);
+                                                    }
+                                                    else
+                                                    {
+                                                        bzero(buffer, sizeof(buffer));
+                                                        strcpy(buffer, "-Err. Has perdido...\n");
+                                                        send(i, buffer, sizeof(buffer), 0);
+                                                        setStatus(i, 2);
+                                                        
+                                                        bzero(buffer, sizeof(buffer));
+                                                        strcpy(buffer, "+Ok. Has ganado!!\n");
+                                                        send(games[o].getSd1(), buffer, sizeof(buffer), 0);
+                                                        setStatus(games[o].getSd1(), 2);  
+                                                        deleteGame(idg);
+                                                    }
                                                 }
                                             }
-
-                                            else if(((games[o].getTurn() == 1) && (games[o].getSd2() == i)) || ((games[o].getTurn() == 2) && (games[o].getSd1() == i)))
-                                            {
-                                                bzero(buffer, sizeof(buffer));
-                                                strcpy(buffer, "-ERR. No es su turno, espere!\n");
-                                                send(i, buffer, sizeof(buffer), 0);
-                                            }
-
-                                            else if((games[o].getTurn() == 2) && (games[o].getSd2() == i))
-                                            {
-                                                if(games[o].Resolver(ogQuote, intento) == true)
-                                                {
-                                                    bzero(buffer, sizeof(buffer));
-                                                    strcpy(buffer, "+Ok. Has ganado!!\n");
-                                                    send(i, buffer, sizeof(buffer), 0);
-                                                    setStatus(i, 2);
-
-                                                    bzero(buffer, sizeof(buffer));
-                                                    strcpy(buffer, "-Err. Has perdido...\n");
-                                                    send(games[o].getSd1(), buffer, sizeof(buffer), 0);
-                                                    setStatus(games[o].getSd1(), 2);
-                                                    deleteGame(idg);
-                                                }
-                                                else
-                                                {
-                                                    bzero(buffer, sizeof(buffer));
-                                                    strcpy(buffer, "-Err. Has perdido...\n");
-                                                    send(i, buffer, sizeof(buffer), 0);
-                                                    setStatus(i, 2);
-                                                    
-                                                    bzero(buffer, sizeof(buffer));
-                                                    strcpy(buffer, "+Ok. Has ganado!!\n");
-                                                    send(games[o].getSd1(), buffer, sizeof(buffer), 0);
-                                                    setStatus(games[o].getSd1(), 2);  
-                                                    deleteGame(idg);
-                                                }
-                                            }
+                                        }
+                                        else
+                                        {
+                                            bzero(buffer, sizeof(buffer));
+                                            strcpy(buffer, "-Err. Fallo en el juego\n");
+                                            send(i, buffer, sizeof(buffer), 0);
                                         }
                                     }
                                 }
@@ -1221,28 +1270,37 @@ int main ( )
                                     int idg = getUserGame(i);
                                     for(int t = 0; t < games.size(); t++)
                                     {
-                                        if(games[t].getIdJuego() == idg)
+                                        if(t != games.size())
                                         {
-                                            if(games[t].getSd1() == i)
+                                            if(games[t].getIdJuego() == idg)
                                             {
-                                                int p1 = games[t].getPuntos1();
-                                                
-                                                string salida = "+OK. Su puntuacion actual es: " + to_string(p1);
-                                                salida += "\n";
-                                                bzero(buffer, sizeof(buffer));
-                                                strcpy(buffer, salida.c_str());                                               
-                                                send(i, buffer, sizeof(buffer), 0);    
+                                                if(games[t].getSd1() == i)
+                                                {
+                                                    int p1 = games[t].getPuntos1();
+                                                    
+                                                    string salida = "+OK. Su puntuacion actual es: " + to_string(p1);
+                                                    salida += "\n";
+                                                    bzero(buffer, sizeof(buffer));
+                                                    strcpy(buffer, salida.c_str());                                               
+                                                    send(i, buffer, sizeof(buffer), 0);    
+                                                }
+                                                else
+                                                {
+                                                    int p2 = games[t].getPuntos2();
+                                                    string salida = "+OK. Su puntuacion actual es: " + to_string(p2);
+                                                    salida += "\n";
+                                                    
+                                                    bzero(buffer, sizeof(buffer));
+                                                    strcpy(buffer, salida.c_str());                                               
+                                                    send(i, buffer, sizeof(buffer), 0);  
+                                                }
                                             }
-                                            else
-                                            {
-                                                int p2 = games[t].getPuntos2();
-                                                string salida = "+OK. Su puntuacion actual es: " + to_string(p2);
-                                                salida += "\n";
-                                                
-                                                bzero(buffer, sizeof(buffer));
-                                                strcpy(buffer, salida.c_str());                                               
-                                                send(i, buffer, sizeof(buffer), 0);  
-                                            }
+                                        }
+                                        else
+                                        {
+                                            bzero(buffer, sizeof(buffer));
+                                            strcpy(buffer, "-Err. Fallo en el juego\n");
+                                            send(i, buffer, sizeof(buffer), 0);
                                         }
                                     }
                                 }
